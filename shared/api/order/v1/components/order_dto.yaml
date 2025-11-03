@@ -22,7 +22,7 @@ properties:
       example: "d7b5c3f2-47a9-4e8d-90ab-2c3e1a6d9f4b"
   total_price:
     type: number
-    format: float
+    format: float64
     description: Итоговая стоимость заказа
     example: 123.45
   transaction_uuid:

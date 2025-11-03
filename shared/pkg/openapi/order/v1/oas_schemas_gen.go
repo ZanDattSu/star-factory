@@ -112,7 +112,7 @@ type CreateOrderResponse struct {
 	// Уникальный идентификатор заказа.
 	OrderUUID string `json:"order_uuid"`
 	// Итоговая стоимость заказа.
-	TotalPrice float32 `json:"total_price"`
+	TotalPrice float64 `json:"total_price"`
 }
 
 // GetOrderUUID returns the value of OrderUUID.
@@ -121,7 +121,7 @@ func (s *CreateOrderResponse) GetOrderUUID() string {
 }
 
 // GetTotalPrice returns the value of TotalPrice.
-func (s *CreateOrderResponse) GetTotalPrice() float32 {
+func (s *CreateOrderResponse) GetTotalPrice() float64 {
 	return s.TotalPrice
 }
 
@@ -131,7 +131,7 @@ func (s *CreateOrderResponse) SetOrderUUID(val string) {
 }
 
 // SetTotalPrice sets the value of TotalPrice.
-func (s *CreateOrderResponse) SetTotalPrice(val float32) {
+func (s *CreateOrderResponse) SetTotalPrice(val float64) {
 	s.TotalPrice = val
 }
 
@@ -404,7 +404,7 @@ type OrderDto struct {
 	// Список UUID деталей.
 	PartUuids []string `json:"part_uuids"`
 	// Итоговая стоимость заказа.
-	TotalPrice float32 `json:"total_price"`
+	TotalPrice float64 `json:"total_price"`
 	// UUID транзакции оплаты (если оплачен).
 	TransactionUUID OptString        `json:"transaction_uuid"`
 	PaymentMethod   OptPaymentMethod `json:"payment_method"`
@@ -427,7 +427,7 @@ func (s *OrderDto) GetPartUuids() []string {
 }
 
 // GetTotalPrice returns the value of TotalPrice.
-func (s *OrderDto) GetTotalPrice() float32 {
+func (s *OrderDto) GetTotalPrice() float64 {
 	return s.TotalPrice
 }
 
@@ -462,7 +462,7 @@ func (s *OrderDto) SetPartUuids(val []string) {
 }
 
 // SetTotalPrice sets the value of TotalPrice.
-func (s *OrderDto) SetTotalPrice(val float32) {
+func (s *OrderDto) SetTotalPrice(val float64) {
 	s.TotalPrice = val
 }
 

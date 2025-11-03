@@ -3,10 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"net/http"
@@ -22,6 +18,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-faster/errors"
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -35,29 +36,25 @@ const (
 	shutdownTimeout   = 10 * time.Second
 )
 
-type Order struct {
-	orderv1.OrderDto
-}
-
-type OrderStorage struct {
-	orders map[string]*Order
-	mu     sync.RWMutex
-}
-
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{
-		orders: make(map[string]*Order),
+		orders: make(map[string]*orderv1.OrderDto),
 	}
 }
 
-func (s *OrderStorage) GetOrder(uuid string) (*Order, bool) {
+type OrderStorage struct {
+	orders map[string]*orderv1.OrderDto
+	mu     sync.RWMutex
+}
+
+func (s *OrderStorage) GetOrder(uuid string) (*orderv1.OrderDto, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	order, ok := s.orders[uuid]
 	return order, ok
 }
 
-func (s *OrderStorage) PutOrder(uuid string, order *Order) {
+func (s *OrderStorage) PutOrder(uuid string, order *orderv1.OrderDto) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.orders[uuid] = order
@@ -72,17 +69,58 @@ type OrderHandler struct {
 func NewOrderHandler(
 	storage *OrderStorage,
 	paymentClient paymentv1.PaymentServiceClient,
+	inventoryClient inventoryv1.InventoryServiceClient,
 ) *OrderHandler {
-
-	return &OrderHandler{storage: storage,
-		paymentGRPCClient: paymentClient,
-		//TODO добавить inventoryClient
+	return &OrderHandler{
+		storage:             storage,
+		paymentGRPCClient:   paymentClient,
+		inventoryGRPCClient: inventoryClient,
 	}
 }
 
-func (oh *OrderHandler) CreateOrder(_ context.Context, req *orderv1.CreateOrderRequest) (orderv1.CreateOrderRes, error) {
-	//TODO implement
-	return nil, nil
+func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrderRequest) (orderv1.CreateOrderRes, error) {
+	parts, err := oh.inventoryGRPCClient.ListParts(
+		ctx,
+		&inventoryv1.ListPartsRequest{
+			Filter: nil, // TODO заменить
+		},
+	)
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			return &orderv1.NotFoundError{
+				Code:    404,
+				Message: "one or more parts not found",
+			}, nil
+		} else {
+			return &orderv1.InternalServerError{
+				Code:    500,
+				Message: fmt.Sprintf("failed to list parts from inventory service: %v", err),
+			}, nil
+		}
+	}
+
+	partUuids := make([]string, 0, len(parts.Parts))
+	var totalPrice float64
+	for _, part := range parts.Parts {
+		partUuids = append(partUuids, part.Uuid)
+		totalPrice += part.Price
+	}
+
+	orderUUID := uuid.New().String()
+	newOrder := &orderv1.OrderDto{
+		OrderUUID:  orderUUID,
+		UserUUID:   req.UserUUID,
+		PartUuids:  partUuids,
+		TotalPrice: totalPrice,
+		Status:     orderv1.OrderStatusPENDINGPAYMENT,
+	}
+	oh.storage.PutOrder(orderUUID, newOrder)
+
+	return &orderv1.CreateOrderResponse{
+		OrderUUID:  orderUUID,
+		TotalPrice: totalPrice,
+	}, nil
 }
 
 func convertPaymentMethod(method orderv1.PaymentMethod) paymentv1.PaymentMethod {
@@ -106,13 +144,13 @@ func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderReque
 	if orderUUID == "" {
 		return &orderv1.BadRequestError{
 			Code:    400,
-			Message: fmt.Sprintf("empty order UUID"),
+			Message: "empty order UUID",
 		}, nil
 	}
 
 	order, ok := oh.storage.GetOrder(orderUUID)
 	if !ok {
-		return OrderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID), nil
 	}
 
 	paymentResponse, err := oh.paymentGRPCClient.PayOrder(
@@ -122,7 +160,6 @@ func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderReque
 			UserUuid:      order.UserUUID,
 			PaymentMethod: convertPaymentMethod(req.PaymentMethod),
 		})
-
 	if err != nil {
 		statusCode, ok := status.FromError(err)
 		if ok && statusCode.Code() == codes.Internal {
@@ -148,7 +185,7 @@ func (oh *OrderHandler) GetOrder(_ context.Context, params orderv1.GetOrderParam
 	orderUUID := params.OrderUUID
 	order, ok := oh.storage.GetOrder(orderUUID)
 	if !ok {
-		return OrderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID), nil
 	}
 	return order, nil
 }
@@ -158,7 +195,7 @@ func (oh *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrde
 
 	order, ok := oh.storage.GetOrder(orderUUID)
 	if !ok {
-		return OrderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID), nil
 	}
 
 	var resp orderv1.CancelOrderRes
@@ -182,6 +219,18 @@ func (oh *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrde
 	return resp, nil
 }
 
+func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
+	conn, err := grpc.NewClient(
+		getAddress(port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
+	)
+	return conn, err
+}
+
+func getAddress(port string) string {
+	return net.JoinHostPort("localhost", port)
+}
+
 func (oh *OrderHandler) NewError(_ context.Context, err error) *orderv1.GenericErrorStatusCode {
 	return &orderv1.GenericErrorStatusCode{
 		StatusCode: http.StatusInternalServerError,
@@ -192,18 +241,18 @@ func (oh *OrderHandler) NewError(_ context.Context, err error) *orderv1.GenericE
 	}
 }
 
-func OrderNotFoundError(orderUUID string) (*orderv1.NotFoundError, error) {
+func OrderNotFoundError(orderUUID string) *orderv1.NotFoundError {
 	return &orderv1.NotFoundError{
 		Code:    404,
 		Message: fmt.Sprintf("Order %s not found", orderUUID),
-	}, nil
+	}
 }
 
 func main() {
 	log.Println("Создаем payment gRPC клиент")
-	conn, err := NewGRPCConnectWithoutSecure(paymentServicePort)
+	conn, err := newGRPCConnectWithoutSecure(paymentServicePort)
 	if err != nil {
-		log.Fatalf("❌ Ошибка подключения к gRPC (%s): %v", paymentServicePort, err)
+		log.Printf("❌ Ошибка подключения к gRPC (%s): %v", inventoryServicePort, err)
 		return
 	}
 	defer func() {
@@ -217,32 +266,33 @@ func main() {
 
 	log.Println("======================================")
 
-	/*	log.Println("Создаем inventory gRPC клиент")
-		conn, err = NewGRPCConnectWithoutSecure(inventoryServicePort)
-		if err != nil {
-			log.Fatalf("❌ Ошибка подключения к gRPC (%s): %v", inventoryServicePort, err)
-			return
+	log.Println("Создаем inventory gRPC клиент")
+	conn, err = newGRPCConnectWithoutSecure(inventoryServicePort)
+	if err != nil {
+		log.Printf("❌ Ошибка подключения к gRPC (%s): %v", inventoryServicePort, err)
+		return
+	}
+	defer func() {
+		if closeErr := conn.Close(); closeErr != nil {
+			log.Printf("failed to close connect: %v", closeErr)
 		}
-		defer func() {
-			if closeErr := conn.Close(); closeErr != nil {
-				log.Printf("failed to close connect: %v", closeErr)
-			}
-		}()
+	}()
 
-		inventoryClient := inventoryv1.NewInventoryServiceClient(conn)
-		log.Printf("✅ Успешно создан inventory gRPC-клиент (%s)", inventoryServicePort)
+	inventoryClient := inventoryv1.NewInventoryServiceClient(conn)
+	log.Printf("✅ Успешно создан inventory gRPC-клиент (%s)", inventoryServicePort)
 
-		log.Println("======================================")*/
+	log.Println("======================================")
 
 	orderStorage := NewOrderStorage()
 
 	log.Println("Создаем обработчик API погоды")
-	orderHandler := NewOrderHandler(orderStorage, paymentClient)
+	orderHandler := NewOrderHandler(orderStorage, paymentClient, inventoryClient)
 
 	log.Println("Создаем OpenAPI сервер")
 	orderServer, err := orderv1.NewServer(orderHandler)
 	if err != nil {
-		log.Fatalf("Ошибка создания сервера OpenAPI: %v", err)
+		log.Printf("Ошибка создания сервера OpenAPI: %v", err)
+		return
 	}
 
 	r := chi.NewRouter()
@@ -291,16 +341,4 @@ func main() {
 	}
 
 	log.Println("✅ Сервер остановлен")
-}
-
-func NewGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
-	conn, err := grpc.NewClient(
-		getAddress(port),
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
-	)
-	return conn, err
-}
-
-func getAddress(port string) string {
-	return net.JoinHostPort("localhost", port)
 }

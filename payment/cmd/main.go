@@ -3,24 +3,26 @@ package main
 import (
 	"context"
 	"fmt"
-	paymentv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
-	"github.com/google/uuid"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
+	paymentv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const grpcPort = 50051
 
-type InventoryService struct {
+type PaymentService struct {
 	paymentv1.UnimplementedPaymentServiceServer
 }
 
-func (is InventoryService) PayOrder(_ context.Context, req *paymentv1.PayOrderRequest) (*paymentv1.PayOrderResponse, error) {
+func (ps PaymentService) PayOrder(_ context.Context, _ *paymentv1.PayOrderRequest) (*paymentv1.PayOrderResponse, error) {
 	u := uuid.New()
 
 	log.Printf("Оплата прошла успешно, transaction_uuid:%s", u)
@@ -39,7 +41,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	service := InventoryService{}
+	service := PaymentService{}
 
 	paymentv1.RegisterPaymentServiceServer(server, service)
 
