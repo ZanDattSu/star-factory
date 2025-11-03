@@ -62,7 +62,7 @@ func (s *CreateOrderResponse) Validate() error {
 	return nil
 }
 
-func (s *GetOrderResponse) Validate() error {
+func (s *OrderDto) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}

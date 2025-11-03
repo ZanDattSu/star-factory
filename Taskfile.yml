@@ -17,7 +17,7 @@ vars:
   GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
   GCI: '{{.BIN_DIR}}/gci'
   GOFUMPT: '{{.BIN_DIR}}/gofumpt'
-  BUF: '{{.BIN_DIR}}/buf'
+  BUF: 'buf'
   OGEN: '{{.BIN_DIR}}/ogen'
   YQ: '{{.BIN_DIR}}/yq'
   PROTOC_GEN_GO: '{{.BIN_DIR}}/protoc-gen-go'
@@ -136,18 +136,15 @@ tasks:
     desc: "Устанавливает Buf в каталог bin"
     cmds:
       - |
-        [ -f {{.BIN_DIR}}/buf.exe ] || {
-          mkdir -p {{.BIN_DIR}}
-          echo "📦 Скачиваем buf для Windows..."
+        [ -f {{.BUF}} ] || {
+          mkdir -p {{.BIN_DIR}} tmp-buf
           curl -sSL \
-            -o buf.zip \
-            "https://github.com/bufbuild/buf/releases/download/v{{.BUF_VERSION}}/buf-windows-x86_64.zip"
-          unzip buf.zip -d tmp-buf
-          mv tmp-buf/buf/bin/buf.exe {{.BIN_DIR}}/buf.exe
-          rm -rf tmp-buf buf.zip
-          chmod +x {{.BIN_DIR}}/buf.exe
+            "https://github.com/bufbuild/buf/releases/download/v{{.BUF_VERSION}}/buf-$(uname -s)-$(uname -m).tar.gz" \
+            | tar -xz -C tmp-buf
+          mv tmp-buf/buf/bin/buf {{.BUF}}
+          rm -rf tmp-buf
+          chmod +x {{.BUF}}
         }
-  
 
   proto:install-plugins:
     desc: "Устанавливает protoc плагины в каталог bin"
@@ -163,14 +160,14 @@ tasks:
         }
 
   proto:gen:
-    deps: [ install-buf, proto:install-plugins, proto:lint ]
+    deps: [ proto:install-plugins, proto:lint ]
     desc: Генерация Go-кода из .proto
     dir: shared/proto
     cmds:
       - '{{.BUF}} generate'
 
   proto:lint:
-    deps: [ install-buf, proto:install-plugins ]
+    deps: [ proto:install-plugins ]
     desc: Проверка .proto-файлов на соответствие стилю
     dir: shared/proto
     cmds:

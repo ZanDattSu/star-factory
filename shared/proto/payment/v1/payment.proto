@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package payment.v1;
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1";
+
+service PaymentService {
+  rpc PayOrder(PayOrderRequest) returns (PayOrderResponse);
+}
+
+// Способ оплаты
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;     // Неизвестный способ
+  PAYMENT_METHOD_CARD = 1;        // Банковская карта
+  PAYMENT_METHOD_SBP = 2;         // Система быстрых платежей
+  PAYMENT_METHOD_CREDIT_CARD = 3; // Кредитная карта
+  PAYMENT_METHOD_INVESTOR_MONEY = 4; // Деньги инвестора (внутренний метод)
+}
+
+// Запрос на оплату заказа
+message PayOrderRequest {
+  string order_uuid = 1;        // UUID заказа
+  string user_uuid = 2;         // UUID пользователя
+  PaymentMethod payment_method = 3; // способ оплаты
+}
+
+// Ответ с UUID транзакции
+message PayOrderResponse {
+  string transaction_uuid = 1;
+}

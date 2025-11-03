@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1";
+
+// Сервис работы с деталями
+service InventoryService {
+  rpc GetPart(GetPartRequest) returns (GetPartResponse);
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
+}
+
+// Категория детали
+enum Category {
+  CATEGORY_UNSPECIFIED = 0;
+  CATEGORY_ENGINE = 1;
+  CATEGORY_FUEL = 2;
+  CATEGORY_PORTHOLE = 3;
+  CATEGORY_WING = 4;
+}
+
+// Универсальное значение для метаданных
+message Value {
+  oneof kind {
+    string string_value = 1;
+    int64 int64_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+  }
+}
+
+// Размеры детали
+message Dimensions {
+  double length = 1; // длина, см
+  double width = 2;  // ширина, см
+  double height = 3; // высота, см
+  double weight = 4; // вес, кг
+}
+
+// Производитель
+message Manufacturer {
+  string name = 1;    // название
+  string country = 2; // страна
+  string website = 3; // сайт
+}
+
+// Деталь
+message Part {
+  string uuid = 1;            // ID детали
+  string name = 2;            // имя
+  string description = 3;     // описание
+  double price = 4;           // цена
+  int64 stock_quantity = 5;   // остаток на складе
+  Category category = 6;      // категория
+
+  Dimensions dimensions = 7;  // размеры
+  Manufacturer manufacturer = 8; // производитель
+
+  repeated string tags = 9;   // теги
+  map<string, Value> metadata = 10; // доп. данные
+
+  google.protobuf.Timestamp created_at = 11; // когда создано
+  google.protobuf.Timestamp updated_at = 12; // когда обновлено
+}
+
+// Запрос детали
+message GetPartRequest {
+  string uuid = 1; // ID детали
+}
+
+// Ответ с деталью
+message GetPartResponse {
+  Part part = 1;
+}
+
+// Фильтр для поиска деталей
+message PartsFilter {
+  repeated string uuids = 1;                // фильтр по UUID
+  repeated string names = 2;                // фильтр по имени
+  repeated Category categories = 3;         // фильтр по категории
+  repeated string manufacturer_countries = 4; // фильтр по стране производителя
+  repeated string tags = 5;                 // фильтр по тегам
+}
+
+// Запрос списка деталей
+message ListPartsRequest {
+  PartsFilter filter = 1; // параметры фильтрации (все поля опциональны)
+}
+
+// Ответ со списком деталей
+message ListPartsResponse {
+  repeated Part parts = 1; // найденные детали
+}

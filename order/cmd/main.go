@@ -3,20 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
-	orderv1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-faster/errors"
-	"github.com/google/uuid"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"shared/pkg/openapi/order/v1"
 	"sync"
 	"syscall"
 	"time"
+
+	orderv1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-faster/errors"
+	"github.com/google/uuid"
 )
 
 const (
@@ -28,28 +28,28 @@ const (
 )
 
 type Order struct {
-	orderv1.GetOrderResponse
+	orderv1.OrderDto
 }
 
 type OrderStorage struct {
-	orders map[uuid.UUID]*Order
+	orders map[string]*Order
 	mu     sync.RWMutex
 }
 
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{
-		orders: make(map[uuid.UUID]*Order),
+		orders: make(map[string]*Order),
 	}
 }
 
-func (s *OrderStorage) GetOrder(uuid uuid.UUID) (*Order, bool) {
-	s.mu.Lock()
+func (s *OrderStorage) GetOrder(uuid string) (*Order, bool) {
+	s.mu.RLock()
 	defer s.mu.RUnlock()
 	order, ok := s.orders[uuid]
 	return order, ok
 }
 
-func (s *OrderStorage) PutOrder(uuid uuid.UUID, order *Order) {
+func (s *OrderStorage) PutOrder(uuid string, order *Order) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.orders[uuid] = order
@@ -65,24 +65,23 @@ func NewOrderHandler(storage *OrderStorage) *OrderHandler {
 	}
 }
 
-func (o *OrderHandler) CreateOrder(_ context.Context, req *order_v1.CreateOrderRequest) (order_v1.CreateOrderRes, error) {
-	//TODO implement me
-	panic("implement me")
+func (o *OrderHandler) CreateOrder(_ context.Context, req *orderv1.CreateOrderRequest) (orderv1.CreateOrderRes, error) {
+	return nil, nil
 }
 
-func paymentServicePayOrderFake(userUUID uuid.UUID, orderUUID uuid.UUID, method orderv1.PaymentMethod) uuid.UUID {
-	return uuid.New()
+func paymentServicePayOrderFake(userUUID, orderUUID string, method orderv1.PaymentMethod) string {
+	return uuid.New().String()
 }
 
-func (o *OrderHandler) OrderPay(_ context.Context, req *order_v1.PayOrderRequest, params order_v1.OrderPayParams) (order_v1.OrderPayRes, error) {
+func (o *OrderHandler) OrderPay(_ context.Context, req *orderv1.PayOrderRequest, params orderv1.OrderPayParams) (orderv1.OrderPayRes, error) {
 	orderUUID := params.OrderUUID
 	order, ok := o.storage.GetOrder(orderUUID)
 	if !ok {
-		return orderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID)
 	}
 
 	order.TransactionUUID.SetTo(
-		//TODO убрать fake
+		// TODO убрать fake
 		paymentServicePayOrderFake(
 			order.UserUUID,
 			order.OrderUUID,
@@ -98,24 +97,24 @@ func (o *OrderHandler) OrderPay(_ context.Context, req *order_v1.PayOrderRequest
 	}, nil
 }
 
-func (o *OrderHandler) GetOrder(_ context.Context, params order_v1.GetOrderParams) (order_v1.GetOrderRes, error) {
+func (o *OrderHandler) GetOrder(_ context.Context, params orderv1.GetOrderParams) (orderv1.GetOrderRes, error) {
 	orderUUID := params.OrderUUID
 	order, ok := o.storage.GetOrder(orderUUID)
 	if !ok {
-		return orderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID)
 	}
 	return order, nil
 }
 
-func (o *OrderHandler) CancelOrder(_ context.Context, params order_v1.CancelOrderParams) (order_v1.CancelOrderRes, error) {
+func (o *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrderParams) (orderv1.CancelOrderRes, error) {
 	orderUUID := params.OrderUUID
 
 	order, ok := o.storage.GetOrder(orderUUID)
 	if !ok {
-		return orderNotFoundError(orderUUID)
+		return OrderNotFoundError(orderUUID)
 	}
 
-	var resp order_v1.CancelOrderRes
+	var resp orderv1.CancelOrderRes
 
 	switch order.GetStatus() {
 	case orderv1.OrderStatusPENDINGPAYMENT:
@@ -136,20 +135,20 @@ func (o *OrderHandler) CancelOrder(_ context.Context, params order_v1.CancelOrde
 	return resp, nil
 }
 
-func (o *OrderHandler) NewError(_ context.Context, err error) *order_v1.GenericErrorStatusCode {
+func (o *OrderHandler) NewError(_ context.Context, err error) *orderv1.GenericErrorStatusCode {
 	return &orderv1.GenericErrorStatusCode{
 		StatusCode: http.StatusInternalServerError,
-		Response: order_v1.GenericError{
+		Response: orderv1.GenericError{
 			Code:    orderv1.NewOptInt(http.StatusInternalServerError),
 			Message: orderv1.NewOptString(err.Error()),
 		},
 	}
 }
 
-func orderNotFoundError(orderUUID uuid.UUID) (*orderv1.NotFoundError, error) {
+func OrderNotFoundError(orderUUID string) (*orderv1.NotFoundError, error) {
 	return &orderv1.NotFoundError{
 		Code:    404,
-		Message: fmt.Sprintf("Order %d not found", orderUUID),
+		Message: fmt.Sprintf("Order %s not found", orderUUID),
 	}, nil
 }
 
