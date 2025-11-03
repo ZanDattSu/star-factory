@@ -27,7 +27,6 @@ properties:
     example: 123.45
   transaction_uuid:
     type: string
-    nullable: true
     description: UUID транзакции оплаты (если оплачен)
     example: "e4a7b1f8-6c2d-4e3a-90c2-f5a1b8d9a7c3"
   payment_method:

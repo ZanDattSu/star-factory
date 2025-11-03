@@ -5,6 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
+	github.com/ZanDattSu/star-factory/payment v0.0.0-00010101000000-000000000000
 	github.com/ZanDattSu/star-factory/shared v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/go-faster/errors v0.7.1

@@ -3,7 +3,7 @@ parameters:
 
 post:
   summary: Оплатить заказ
-  operationId: OrderPay
+  operationId: PayOrder
   tags:
     - Order
   description:
