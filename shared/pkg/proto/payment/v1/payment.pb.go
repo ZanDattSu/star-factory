@@ -7,6 +7,8 @@
 package payment_v1
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -80,9 +82,9 @@ func (PaymentMethod) EnumDescriptor() ([]byte, []int) {
 // Запрос на оплату заказа
 type PayOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderUuid     string                 `protobuf:"bytes,1,opt,name=order_uuid,json=orderUuid,proto3" json:"order_uuid,omitempty"`                                            // UUID заказа
-	UserUuid      string                 `protobuf:"bytes,2,opt,name=user_uuid,json=userUuid,proto3" json:"user_uuid,omitempty"`                                               // UUID пользователя
-	PaymentMethod PaymentMethod          `protobuf:"varint,3,opt,name=payment_method,json=paymentMethod,proto3,enum=payment.v1.PaymentMethod" json:"payment_method,omitempty"` // способ оплаты
+	OrderUuid     string                 `protobuf:"bytes,1,opt,name=order_uuid,json=orderUuid,proto3" json:"order_uuid,omitempty"` // UUID заказа
+	UserUuid      string                 `protobuf:"bytes,2,opt,name=user_uuid,json=userUuid,proto3" json:"user_uuid,omitempty"`    // UUID пользователя
+	PaymentMethod PaymentMethod          `protobuf:"varint,3,opt,name=payment_method,json=paymentMethod,proto3,enum=payment.v1.PaymentMethod" json:"payment_method,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -188,22 +190,23 @@ var File_payment_v1_payment_proto protoreflect.FileDescriptor
 const file_payment_v1_payment_proto_rawDesc = "" +
 	"\n" +
 	"\x18payment/v1/payment.proto\x12\n" +
-	"payment.v1\"\x8f\x01\n" +
-	"\x0fPayOrderRequest\x12\x1d\n" +
+	"payment.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"\xaf\x01\n" +
+	"\x0fPayOrderRequest\x12'\n" +
 	"\n" +
-	"order_uuid\x18\x01 \x01(\tR\torderUuid\x12\x1b\n" +
-	"\tuser_uuid\x18\x02 \x01(\tR\buserUuid\x12@\n" +
-	"\x0epayment_method\x18\x03 \x01(\x0e2\x19.payment.v1.PaymentMethodR\rpaymentMethod\"=\n" +
-	"\x10PayOrderResponse\x12)\n" +
-	"\x10transaction_uuid\x18\x01 \x01(\tR\x0ftransactionUuid*\xa3\x01\n" +
+	"order_uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\torderUuid\x12%\n" +
+	"\tuser_uuid\x18\x02 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\buserUuid\x12L\n" +
+	"\x0epayment_method\x18\x03 \x01(\x0e2\x19.payment.v1.PaymentMethodB\n" +
+	"\xfaB\a\x82\x01\x04\x10\x01 \x00R\rpaymentMethod\"G\n" +
+	"\x10PayOrderResponse\x123\n" +
+	"\x10transaction_uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x0ftransactionUuid*\xa3\x01\n" +
 	"\rPaymentMethod\x12\x1e\n" +
 	"\x1aPAYMENT_METHOD_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13PAYMENT_METHOD_CARD\x10\x01\x12\x16\n" +
 	"\x12PAYMENT_METHOD_SBP\x10\x02\x12\x1e\n" +
 	"\x1aPAYMENT_METHOD_CREDIT_CARD\x10\x03\x12!\n" +
-	"\x1dPAYMENT_METHOD_INVESTOR_MONEY\x10\x042W\n" +
-	"\x0ePaymentService\x12E\n" +
-	"\bPayOrder\x12\x1b.payment.v1.PayOrderRequest\x1a\x1c.payment.v1.PayOrderResponseBBZ@github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1b\x06proto3"
+	"\x1dPAYMENT_METHOD_INVESTOR_MONEY\x10\x042s\n" +
+	"\x0ePaymentService\x12a\n" +
+	"\bPayOrder\x12\x1b.payment.v1.PayOrderRequest\x1a\x1c.payment.v1.PayOrderResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/v1/paymentBBZ@github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1b\x06proto3"
 
 var (
 	file_payment_v1_payment_proto_rawDescOnce sync.Once

@@ -3,13 +3,26 @@ syntax = "proto3";
 package inventory.v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
 
 option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1";
 
 // Сервис работы с деталями
 service InventoryService {
-  rpc GetPart(GetPartRequest) returns (GetPartResponse);
-  rpc ListParts(ListPartsRequest) returns (ListPartsResponse);
+  rpc GetPart(GetPartRequest) returns (GetPartResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/inventory/{uuid}"
+    };
+  }
+
+  rpc ListParts(ListPartsRequest) returns (ListPartsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/inventory/list"
+      body: "*"
+    };
+  }
 }
 
 // Категория детали
@@ -33,55 +46,55 @@ message Value {
 
 // Размеры детали
 message Dimensions {
-  double length = 1; // длина, см
-  double width = 2;  // ширина, см
-  double height = 3; // высота, см
-  double weight = 4; // вес, кг
+  double length = 1 [(validate.rules).double = {gt: 0}]; // длина, см
+  double width = 2  [(validate.rules).double = {gt: 0}]; // ширина, см
+  double height = 3 [(validate.rules).double = {gt: 0}]; // высота, см
+  double weight = 4 [(validate.rules).double = {gt: 0}]; // вес, кг
 }
 
 // Производитель
 message Manufacturer {
-  string name = 1;    // название
-  string country = 2; // страна
-  string website = 3; // сайт
+  string name = 1;                                                                // название
+  string country = 2;                                                             // страна
+  string website = 3 [(validate.rules).string = {uri: true, ignore_empty: true}]; // сайт
 }
 
 // Деталь
 message Part {
-  string uuid = 1;            // ID детали
-  string name = 2;            // имя
-  string description = 3;     // описание
-  double price = 4;           // цена
-  int64 stock_quantity = 5;   // остаток на складе
-  Category category = 6;      // категория
+  string uuid = 1 [(validate.rules).string.uuid = true];                                  // ID детали
+  string name = 2;                                                                        // имя
+  string description = 3;                                                                 // описание
+  double price = 4 [(validate.rules).double = {gt:0}];                                     // цена
+  int64 stock_quantity = 5 [(validate.rules).int64 = {gte: 0}];                           // остаток на складе
+  Category category = 6 [(validate.rules).enum = {defined_only: true, not_in: [0]}];      // категория
 
-  Dimensions dimensions = 7;  // размеры
-  Manufacturer manufacturer = 8; // производитель
+  Dimensions dimensions = 7 [(validate.rules).message.required = true];                   // размеры
+  Manufacturer manufacturer = 8 [(validate.rules).message.required = true];               // производитель
 
-  repeated string tags = 9;   // теги
-  map<string, Value> metadata = 10; // доп. данные
+  repeated string tags = 9 [(validate.rules).repeated = {unique: true}];                  // теги
+  map<string, Value> metadata = 10;                                                       // доп. данные
 
-  google.protobuf.Timestamp created_at = 11; // когда создано
-  google.protobuf.Timestamp updated_at = 12; // когда обновлено
+  google.protobuf.Timestamp created_at = 11 [(validate.rules).timestamp.required = true]; // дата создания
+  google.protobuf.Timestamp updated_at = 12 [(validate.rules).timestamp.required = true]; // дата обновления
 }
 
 // Запрос детали
 message GetPartRequest {
-  string uuid = 1; // ID детали
+  string uuid = 1 [(validate.rules).string.uuid = true]; // ID детали
 }
 
 // Ответ с деталью
 message GetPartResponse {
-  Part part = 1;
+  Part part = 1 [(validate.rules).message.required = true];
 }
 
 // Фильтр для поиска деталей
 message PartsFilter {
-  repeated string uuids = 1;                // фильтр по UUID
-  repeated string names = 2;                // фильтр по имени
-  repeated Category categories = 3;         // фильтр по категории
+  repeated string uuids = 1;                  // фильтр по UUID
+  repeated string names = 2;                  // фильтр по имени
+  repeated Category categories = 3;           // фильтр по категории
   repeated string manufacturer_countries = 4; // фильтр по стране производителя
-  repeated string tags = 5;                 // фильтр по тегам
+  repeated string tags = 5;                   // фильтр по тегам
 }
 
 // Запрос списка деталей

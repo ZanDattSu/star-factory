@@ -7,6 +7,8 @@
 package inventory_v1
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -336,8 +338,8 @@ type Part struct {
 	Manufacturer  *Manufacturer          `protobuf:"bytes,8,opt,name=manufacturer,proto3" json:"manufacturer,omitempty"`                                                                    // производитель
 	Tags          []string               `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty"`                                                                                    // теги
 	Metadata      map[string]*Value      `protobuf:"bytes,10,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // доп. данные
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                                                        // когда создано
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`                                                        // когда обновлено
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                                                        // дата создания
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`                                                        // дата обновления
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -717,7 +719,7 @@ var File_inventory_v1_inventory_proto protoreflect.FileDescriptor
 
 const file_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
-	"\x1cinventory/v1/inventory.proto\x12\finventory.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9d\x01\n" +
+	"\x1cinventory/v1/inventory.proto\x12\finventory.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"\x9d\x01\n" +
 	"\x05Value\x12#\n" +
 	"\fstring_value\x18\x01 \x01(\tH\x00R\vstringValue\x12!\n" +
 	"\vint64_value\x18\x02 \x01(\x03H\x00R\n" +
@@ -725,42 +727,43 @@ const file_inventory_v1_inventory_proto_rawDesc = "" +
 	"\fdouble_value\x18\x03 \x01(\x01H\x00R\vdoubleValue\x12\x1f\n" +
 	"\n" +
 	"bool_value\x18\x04 \x01(\bH\x00R\tboolValueB\x06\n" +
-	"\x04kind\"j\n" +
+	"\x04kind\"\xaa\x01\n" +
 	"\n" +
-	"Dimensions\x12\x16\n" +
-	"\x06length\x18\x01 \x01(\x01R\x06length\x12\x14\n" +
-	"\x05width\x18\x02 \x01(\x01R\x05width\x12\x16\n" +
-	"\x06height\x18\x03 \x01(\x01R\x06height\x12\x16\n" +
-	"\x06weight\x18\x04 \x01(\x01R\x06weight\"V\n" +
+	"Dimensions\x12&\n" +
+	"\x06length\x18\x01 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x06length\x12$\n" +
+	"\x05width\x18\x02 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x05width\x12&\n" +
+	"\x06height\x18\x03 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x06height\x12&\n" +
+	"\x06weight\x18\x04 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x06weight\"c\n" +
 	"\fManufacturer\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\acountry\x18\x02 \x01(\tR\acountry\x12\x18\n" +
-	"\awebsite\x18\x03 \x01(\tR\awebsite\"\xd5\x04\n" +
-	"\x04Part\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x12\n" +
+	"\acountry\x18\x02 \x01(\tR\acountry\x12%\n" +
+	"\awebsite\x18\x03 \x01(\tB\v\xfaB\br\x06\xd0\x01\x01\x88\x01\x01R\awebsite\"\xb6\x05\n" +
+	"\x04Part\x12\x1c\n" +
+	"\x04uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x04uuid\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05price\x18\x04 \x01(\x01R\x05price\x12%\n" +
-	"\x0estock_quantity\x18\x05 \x01(\x03R\rstockQuantity\x122\n" +
-	"\bcategory\x18\x06 \x01(\x0e2\x16.inventory.v1.CategoryR\bcategory\x128\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12$\n" +
+	"\x05price\x18\x04 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x05price\x12.\n" +
+	"\x0estock_quantity\x18\x05 \x01(\x03B\a\xfaB\x04\"\x02(\x00R\rstockQuantity\x12>\n" +
+	"\bcategory\x18\x06 \x01(\x0e2\x16.inventory.v1.CategoryB\n" +
+	"\xfaB\a\x82\x01\x04\x10\x01 \x00R\bcategory\x12B\n" +
 	"\n" +
-	"dimensions\x18\a \x01(\v2\x18.inventory.v1.DimensionsR\n" +
-	"dimensions\x12>\n" +
-	"\fmanufacturer\x18\b \x01(\v2\x1a.inventory.v1.ManufacturerR\fmanufacturer\x12\x12\n" +
-	"\x04tags\x18\t \x03(\tR\x04tags\x12<\n" +
+	"dimensions\x18\a \x01(\v2\x18.inventory.v1.DimensionsB\b\xfaB\x05\x8a\x01\x02\x10\x01R\n" +
+	"dimensions\x12H\n" +
+	"\fmanufacturer\x18\b \x01(\v2\x1a.inventory.v1.ManufacturerB\b\xfaB\x05\x8a\x01\x02\x10\x01R\fmanufacturer\x12\x1c\n" +
+	"\x04tags\x18\t \x03(\tB\b\xfaB\x05\x92\x01\x02\x18\x01R\x04tags\x12<\n" +
 	"\bmetadata\x18\n" +
-	" \x03(\v2 .inventory.v1.Part.MetadataEntryR\bmetadata\x129\n" +
+	" \x03(\v2 .inventory.v1.Part.MetadataEntryR\bmetadata\x12C\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampB\b\xfaB\x05\xb2\x01\x02\b\x01R\tcreatedAt\x12C\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x1aP\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampB\b\xfaB\x05\xb2\x01\x02\b\x01R\tupdatedAt\x1aP\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
-	"\x05value\x18\x02 \x01(\v2\x13.inventory.v1.ValueR\x05value:\x028\x01\"$\n" +
-	"\x0eGetPartRequest\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"9\n" +
-	"\x0fGetPartResponse\x12&\n" +
-	"\x04part\x18\x01 \x01(\v2\x12.inventory.v1.PartR\x04part\"\xbc\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.inventory.v1.ValueR\x05value:\x028\x01\".\n" +
+	"\x0eGetPartRequest\x12\x1c\n" +
+	"\x04uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x04uuid\"C\n" +
+	"\x0fGetPartResponse\x120\n" +
+	"\x04part\x18\x01 \x01(\v2\x12.inventory.v1.PartB\b\xfaB\x05\x8a\x01\x02\x10\x01R\x04part\"\xbc\x01\n" +
 	"\vPartsFilter\x12\x14\n" +
 	"\x05uuids\x18\x01 \x03(\tR\x05uuids\x12\x14\n" +
 	"\x05names\x18\x02 \x03(\tR\x05names\x126\n" +
@@ -778,10 +781,10 @@ const file_inventory_v1_inventory_proto_rawDesc = "" +
 	"\x0fCATEGORY_ENGINE\x10\x01\x12\x11\n" +
 	"\rCATEGORY_FUEL\x10\x02\x12\x15\n" +
 	"\x11CATEGORY_PORTHOLE\x10\x03\x12\x11\n" +
-	"\rCATEGORY_WING\x10\x042\xa8\x01\n" +
-	"\x10InventoryService\x12F\n" +
-	"\aGetPart\x12\x1c.inventory.v1.GetPartRequest\x1a\x1d.inventory.v1.GetPartResponse\x12L\n" +
-	"\tListParts\x12\x1e.inventory.v1.ListPartsRequest\x1a\x1f.inventory.v1.ListPartsResponseBDZBgithub.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1b\x06proto3"
+	"\rCATEGORY_WING\x10\x042\xed\x01\n" +
+	"\x10InventoryService\x12h\n" +
+	"\aGetPart\x12\x1c.inventory.v1.GetPartRequest\x1a\x1d.inventory.v1.GetPartResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/inventory/{uuid}\x12o\n" +
+	"\tListParts\x12\x1e.inventory.v1.ListPartsRequest\x1a\x1f.inventory.v1.ListPartsResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/inventory/listBDZBgithub.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1b\x06proto3"
 
 var (
 	file_inventory_v1_inventory_proto_rawDescOnce sync.Once

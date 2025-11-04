@@ -12,9 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	orderv1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
-	inventoryv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
-	paymentv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-faster/errors"
@@ -23,12 +20,16 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+
+	orderv1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	inventoryv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (
 	orderServicePort     = "8080"
-	paymentServicePort   = "50051"
-	inventoryServicePort = "50052"
+	paymentServicePort   = "50052"
+	inventoryServicePort = "50051"
 
 	// Таймауты для HTTP-сервера
 	responseTimeout   = 10 * time.Second
@@ -82,7 +83,14 @@ func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrde
 	parts, err := oh.inventoryGRPCClient.ListParts(
 		ctx,
 		&inventoryv1.ListPartsRequest{
-			Filter: nil, // TODO заменить
+			Filter: &inventoryv1.PartsFilter{
+				Uuids: req.PartUuids,
+				// TODO параметры запросов
+				Names:                 nil,
+				Categories:            nil,
+				ManufacturerCountries: nil,
+				Tags:                  nil,
+			},
 		},
 	)
 	if err != nil {
@@ -98,6 +106,13 @@ func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrde
 				Message: fmt.Sprintf("failed to list parts from inventory service: %v", err),
 			}, nil
 		}
+	}
+
+	if len(parts.Parts) != len(req.PartUuids) {
+		return &orderv1.NotFoundError{
+			Code:    404,
+			Message: "one or more parts not found",
+		}, nil
 	}
 
 	partUuids := make([]string, 0, len(parts.Parts))
@@ -156,7 +171,7 @@ func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderReque
 	paymentResponse, err := oh.paymentGRPCClient.PayOrder(
 		ctx,
 		&paymentv1.PayOrderRequest{
-			OrderUuid:     order.UserUUID,
+			OrderUuid:     order.OrderUUID,
 			UserUuid:      order.UserUUID,
 			PaymentMethod: convertPaymentMethod(req.PaymentMethod),
 		})
@@ -203,6 +218,7 @@ func (oh *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrde
 	switch order.GetStatus() {
 	case orderv1.OrderStatusPENDINGPAYMENT:
 		order.SetStatus(orderv1.OrderStatusCANCELLED)
+		oh.storage.PutOrder(order.OrderUUID, order)
 		resp = &orderv1.CancelOrderNoContent{}
 	case orderv1.OrderStatusPAID:
 		resp = &orderv1.ConflictError{
@@ -285,7 +301,7 @@ func main() {
 
 	orderStorage := NewOrderStorage()
 
-	log.Println("Создаем обработчик API погоды")
+	log.Println("Создаем обработчик Order API")
 	orderHandler := NewOrderHandler(orderStorage, paymentClient, inventoryClient)
 
 	log.Println("Создаем OpenAPI сервер")
