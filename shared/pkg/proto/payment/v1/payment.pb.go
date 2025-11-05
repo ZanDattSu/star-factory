@@ -8,6 +8,7 @@ package payment_v1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -190,7 +191,7 @@ var File_payment_v1_payment_proto protoreflect.FileDescriptor
 const file_payment_v1_payment_proto_rawDesc = "" +
 	"\n" +
 	"\x18payment/v1/payment.proto\x12\n" +
-	"payment.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"\xaf\x01\n" +
+	"payment.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\xaf\x01\n" +
 	"\x0fPayOrderRequest\x12'\n" +
 	"\n" +
 	"order_uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\torderUuid\x12%\n" +
@@ -206,7 +207,8 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\x1aPAYMENT_METHOD_CREDIT_CARD\x10\x03\x12!\n" +
 	"\x1dPAYMENT_METHOD_INVESTOR_MONEY\x10\x042s\n" +
 	"\x0ePaymentService\x12a\n" +
-	"\bPayOrder\x12\x1b.payment.v1.PayOrderRequest\x1a\x1c.payment.v1.PayOrderResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/v1/paymentBBZ@github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1b\x06proto3"
+	"\bPayOrder\x12\x1b.payment.v1.PayOrderRequest\x1a\x1c.payment.v1.PayOrderResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/v1/paymentB\xa8\x01\x92Ac\x129\n" +
+	"\x13Payment Service API\x12\x1bAPI for processing payments2\x051.0.0*\x02\x01\x022\x10application/json:\x10application/jsonZ@github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1b\x06proto3"
 
 var (
 	file_payment_v1_payment_proto_rawDescOnce sync.Once

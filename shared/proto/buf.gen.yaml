@@ -1,8 +1,8 @@
 version: v2
-# Удаляет сгенеренное ранее, то что находится в out каждого плагина.
-clean: true
+#clean: true
 
 plugins:
+  # gRPC generate
   - local: ../../bin/protoc-gen-go
     out: ../pkg/proto
     opt:
@@ -11,12 +11,22 @@ plugins:
     out: ../pkg/proto
     opt:
       - paths=source_relative
+
+  # gRPC gateway
   - local: ../../bin/protoc-gen-grpc-gateway
     out: ../pkg/proto
     opt:
       - paths=source_relative
+
+  # gRPC validate
   - local: ../../bin/protoc-gen-validate
     out: ../pkg/proto
     opt:
       - paths=source_relative
       - lang=go
+
+  # OpenAPI (Swagger) генерация
+  - local: ../../bin/protoc-gen-openapiv2
+    out: ../api
+    opt:
+      - json_names_for_fields=false

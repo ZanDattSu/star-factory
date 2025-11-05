@@ -8,6 +8,7 @@ package inventory_v1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -719,7 +720,7 @@ var File_inventory_v1_inventory_proto protoreflect.FileDescriptor
 
 const file_inventory_v1_inventory_proto_rawDesc = "" +
 	"\n" +
-	"\x1cinventory/v1/inventory.proto\x12\finventory.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"\x9d\x01\n" +
+	"\x1cinventory/v1/inventory.proto\x12\finventory.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a.protoc-gen-openapiv2/options/annotations.proto\"\x9d\x01\n" +
 	"\x05Value\x12#\n" +
 	"\fstring_value\x18\x01 \x01(\tH\x00R\vstringValue\x12!\n" +
 	"\vint64_value\x18\x02 \x01(\x03H\x00R\n" +
@@ -784,7 +785,8 @@ const file_inventory_v1_inventory_proto_rawDesc = "" +
 	"\rCATEGORY_WING\x10\x042\xed\x01\n" +
 	"\x10InventoryService\x12h\n" +
 	"\aGetPart\x12\x1c.inventory.v1.GetPartRequest\x1a\x1d.inventory.v1.GetPartResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/inventory/{uuid}\x12o\n" +
-	"\tListParts\x12\x1e.inventory.v1.ListPartsRequest\x1a\x1f.inventory.v1.ListPartsResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/inventory/listBDZBgithub.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1b\x06proto3"
+	"\tListParts\x12\x1e.inventory.v1.ListPartsRequest\x1a\x1f.inventory.v1.ListPartsResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/inventory/listB\xbc\x01\x92Au\x12K\n" +
+	"\x15Inventory Service API\x12+API for managing spacecraft parts inventory2\x051.0.0*\x02\x01\x022\x10application/json:\x10application/jsonZBgithub.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1b\x06proto3"
 
 var (
 	file_inventory_v1_inventory_proto_rawDescOnce sync.Once

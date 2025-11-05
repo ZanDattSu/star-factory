@@ -1,7 +1,0 @@
-name: order_uuid
-in: path
-required: true
-description: Уникальный идентификатор заказа
-schema:
-  type: string
-  example: "550e8400-e29b-41d4-a716-446655441111"

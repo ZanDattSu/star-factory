@@ -1,0 +1,126 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Payment Service API",
+    "description": "API for processing payments",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "PaymentService"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/payment": {
+      "post": {
+        "operationId": "PaymentService_PayOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PayOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PayOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PaymentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1PayOrderRequest": {
+      "type": "object",
+      "properties": {
+        "order_uuid": {
+          "type": "string",
+          "title": "UUID заказа"
+        },
+        "user_uuid": {
+          "type": "string",
+          "title": "UUID пользователя"
+        },
+        "payment_method": {
+          "$ref": "#/definitions/v1PaymentMethod"
+        }
+      },
+      "title": "Запрос на оплату заказа"
+    },
+    "v1PayOrderResponse": {
+      "type": "object",
+      "properties": {
+        "transaction_uuid": {
+          "type": "string"
+        }
+      },
+      "title": "Ответ с UUID транзакции"
+    },
+    "v1PaymentMethod": {
+      "type": "string",
+      "enum": [
+        "PAYMENT_METHOD_UNSPECIFIED",
+        "PAYMENT_METHOD_CARD",
+        "PAYMENT_METHOD_SBP",
+        "PAYMENT_METHOD_CREDIT_CARD",
+        "PAYMENT_METHOD_INVESTOR_MONEY"
+      ],
+      "default": "PAYMENT_METHOD_UNSPECIFIED",
+      "description": "- PAYMENT_METHOD_UNSPECIFIED: Неизвестный способ\n - PAYMENT_METHOD_CARD: Банковская карта\n - PAYMENT_METHOD_SBP: Система быстрых платежей\n - PAYMENT_METHOD_CREDIT_CARD: Кредитная карта\n - PAYMENT_METHOD_INVESTOR_MONEY: Деньги инвестора (внутренний метод)",
+      "title": "Способ оплаты"
+    }
+  }
+}

@@ -4,23 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
-	"shared/pkg/interceptor"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
+	"github.com/ZanDattSu/star-factory/shared/pkg/interceptor"
 	inventoryv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
@@ -28,9 +28,10 @@ const (
 	httpPort = 8081
 	grpcPort = 50051
 
-	responseTimeout   = 10 * time.Second
 	readHeaderTimeout = 5 * time.Second
 	shutdownTimeout   = 10 * time.Second
+
+	apiRelativePath = "../shared/api"
 )
 
 type Part = inventoryv1.Part
@@ -362,15 +363,40 @@ func main() {
 			return
 		}
 
+		// Создаем файловый сервер для Swagger UI
+		fileServer := http.FileServer(http.Dir(apiRelativePath))
+
+		httpMux := http.NewServeMux()
+
+		httpMux.Handle("/api/", mux)
+
+		// Swagger UI эндпоинты
+		httpMux.Handle("/swagger-ui.html", fileServer)
+		httpMux.Handle("/inventory/v1/inventory.swagger.json", fileServer)
+
+		// Редирект для swagger.json
+		httpMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, apiRelativePath+"/inventory/v1/inventory.swagger.json")
+		})
+
+		// Редирект с корня на Swagger UI
+		httpMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+			if req.URL.Path == "/" {
+				http.Redirect(w, req, "/swagger-ui.html", http.StatusMovedPermanently)
+				return
+			}
+			fileServer.ServeHTTP(w, req)
+		})
+
 		gatewayServer = &http.Server{
 			Addr:              fmt.Sprintf(":%d", httpPort),
-			Handler:           mux,
+			Handler:           httpMux,
 			ReadHeaderTimeout: readHeaderTimeout,
 		}
 
 		log.Printf("🌐 HTTP server with gRPC-Gateway listening on %d\n", httpPort)
 		err = gatewayServer.ListenAndServe()
-		if err != nil && !errors.Is(http.ErrServerClosed, err) {
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("Failed to serve HTTP: %v\n", err)
 			return
 		}

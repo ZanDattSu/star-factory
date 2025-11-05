@@ -1,0 +1,332 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Inventory Service API",
+    "description": "API for managing spacecraft parts inventory",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "InventoryService"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/inventory/list": {
+      "post": {
+        "operationId": "InventoryService_ListParts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPartsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ListPartsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    },
+    "/api/v1/inventory/{uuid}": {
+      "get": {
+        "operationId": "InventoryService_GetPart",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPartResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uuid",
+            "description": "ID детали",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InventoryService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "inventoryv1Value": {
+      "type": "object",
+      "properties": {
+        "string_value": {
+          "type": "string"
+        },
+        "int64_value": {
+          "type": "string",
+          "format": "int64"
+        },
+        "double_value": {
+          "type": "number",
+          "format": "double"
+        },
+        "bool_value": {
+          "type": "boolean"
+        }
+      },
+      "title": "Универсальное значение для метаданных"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Category": {
+      "type": "string",
+      "enum": [
+        "CATEGORY_UNSPECIFIED",
+        "CATEGORY_ENGINE",
+        "CATEGORY_FUEL",
+        "CATEGORY_PORTHOLE",
+        "CATEGORY_WING"
+      ],
+      "default": "CATEGORY_UNSPECIFIED",
+      "title": "Категория детали"
+    },
+    "v1Dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number",
+          "format": "double",
+          "title": "длина, см"
+        },
+        "width": {
+          "type": "number",
+          "format": "double",
+          "title": "ширина, см"
+        },
+        "height": {
+          "type": "number",
+          "format": "double",
+          "title": "высота, см"
+        },
+        "weight": {
+          "type": "number",
+          "format": "double",
+          "title": "вес, кг"
+        }
+      },
+      "title": "Размеры детали"
+    },
+    "v1GetPartResponse": {
+      "type": "object",
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/v1Part"
+        }
+      },
+      "title": "Ответ с деталью"
+    },
+    "v1ListPartsRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/v1PartsFilter",
+          "title": "параметры фильтрации (все поля опциональны)"
+        }
+      },
+      "title": "Запрос списка деталей"
+    },
+    "v1ListPartsResponse": {
+      "type": "object",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Part"
+          },
+          "title": "найденные детали"
+        }
+      },
+      "title": "Ответ со списком деталей"
+    },
+    "v1Manufacturer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "название"
+        },
+        "country": {
+          "type": "string",
+          "title": "страна"
+        },
+        "website": {
+          "type": "string",
+          "title": "сайт"
+        }
+      },
+      "title": "Производитель"
+    },
+    "v1Part": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string",
+          "title": "ID детали"
+        },
+        "name": {
+          "type": "string",
+          "title": "имя"
+        },
+        "description": {
+          "type": "string",
+          "title": "описание"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "title": "цена"
+        },
+        "stock_quantity": {
+          "type": "string",
+          "format": "int64",
+          "title": "остаток на складе"
+        },
+        "category": {
+          "$ref": "#/definitions/v1Category",
+          "title": "категория"
+        },
+        "dimensions": {
+          "$ref": "#/definitions/v1Dimensions",
+          "title": "размеры"
+        },
+        "manufacturer": {
+          "$ref": "#/definitions/v1Manufacturer",
+          "title": "производитель"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "теги"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/inventoryv1Value"
+          },
+          "title": "доп. данные"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "дата создания"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "дата обновления"
+        }
+      },
+      "title": "Деталь"
+    },
+    "v1PartsFilter": {
+      "type": "object",
+      "properties": {
+        "uuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "фильтр по UUID"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "фильтр по имени"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Category"
+          },
+          "title": "фильтр по категории"
+        },
+        "manufacturer_countries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "фильтр по стране производителя"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "фильтр по тегам"
+        }
+      },
+      "title": "Фильтр для поиска деталей"
+    }
+  }
+}

@@ -5,9 +5,22 @@ package inventory.v1;
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 
 option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;inventory_v1";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Inventory Service API";
+    version: "1.0.0";
+    description: "API for managing spacecraft parts inventory";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
 
 // Сервис работы с деталями
 service InventoryService {

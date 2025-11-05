@@ -11,3 +11,4 @@ lint:
   ignore:
     - google/api
     - validate
+    - protoc-gen-openapiv2

@@ -4,8 +4,21 @@ package payment.v1;
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;payment_v1";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Payment Service API";
+    version: "1.0.0";
+    description: "API for processing payments";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+};
 
 service PaymentService {
   rpc PayOrder(PayOrderRequest) returns (PayOrderResponse) {
