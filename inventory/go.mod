@@ -6,11 +6,13 @@ replace github.com/ZanDattSu/star-factory/shared => ../shared
 
 require (
 	github.com/ZanDattSu/star-factory/shared v0.0.0-00010101000000-000000000000
+	github.com/google/uuid v1.6.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3
 	google.golang.org/grpc v1.76.0
 )
 
 require (
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
