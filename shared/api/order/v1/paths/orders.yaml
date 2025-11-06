@@ -1,0 +1,45 @@
+post:
+  summary: Создать заказ
+  operationId: CreateOrder
+  tags:
+    - Order
+  description:
+    Создаёт новый заказ на основе выбранных пользователем деталей.
+    Возвращает идентификатор заказа и итоговую стоимость.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../components/create_order_request.yaml"
+  responses:
+    '200':
+      description: Order create successful
+      content:
+        application/json:
+          schema:
+            $ref: "../components/create_order_response.yaml"
+    '404':
+      description: Not found error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/not_found_error.yaml"
+    '422':
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/validation_error.yaml"
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/internal_server_error.yaml"
+    default:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/generic_error.yaml"
