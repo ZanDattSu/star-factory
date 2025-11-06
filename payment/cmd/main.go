@@ -10,10 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
+	"payment/internal/api/v1/payment"
 	"payment/internal/servers"
-
-	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
+	payService "payment/internal/service/payment"
 )
 
 const (
@@ -23,22 +22,9 @@ const (
 	shutdownTimeout = 10 * time.Second
 )
 
-type PaymentService struct {
-	paymentV1.UnimplementedPaymentServiceServer
-}
-
-func (ps PaymentService) PayOrder(_ context.Context, _ *paymentV1.PayOrderRequest) (*paymentV1.PayOrderResponse, error) {
-	u := uuid.New()
-
-	log.Printf("Оплата прошла успешно, transaction_uuid:%s", u)
-
-	return &paymentV1.PayOrderResponse{
-		TransactionUuid: u.String(),
-	}, nil
-}
-
 func main() {
-	api := &PaymentService{}
+	service := payService.NewService()
+	api := payment.NewApi(service)
 
 	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
@@ -75,7 +61,7 @@ func main() {
 	// Graceful shutdown
 	gracefulShutdown()
 
-	log.Println("🛑 Shutting down servers...")
+	log.Println("⚠️  Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()

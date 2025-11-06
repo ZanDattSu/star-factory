@@ -65,7 +65,7 @@ func main() {
 
 	gracefulShutdown()
 
-	log.Println("🛑 Shutting down servers...")
+	log.Println("⚠️  Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
