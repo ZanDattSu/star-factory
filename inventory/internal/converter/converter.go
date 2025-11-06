@@ -136,13 +136,13 @@ func ManufacturerToModel(manufacturer *inventoryV1.Manufacturer) *model.Manufact
 // CategoryToProto конвертирует model.Category в protobuf Category
 func CategoryToProto(category model.Category) inventoryV1.Category {
 	switch category {
-	case model.ENGINE:
+	case model.CategoryEngine:
 		return inventoryV1.Category_CATEGORY_ENGINE
-	case model.FUEL:
+	case model.CategoryFuel:
 		return inventoryV1.Category_CATEGORY_FUEL
-	case model.PORTHOLE:
+	case model.CategoryPorthole:
 		return inventoryV1.Category_CATEGORY_PORTHOLE
-	case model.WING:
+	case model.CategoryWing:
 		return inventoryV1.Category_CATEGORY_WING
 	default:
 		return inventoryV1.Category_CATEGORY_UNSPECIFIED
@@ -153,15 +153,15 @@ func CategoryToProto(category model.Category) inventoryV1.Category {
 func CategoryToModel(category inventoryV1.Category) model.Category {
 	switch category {
 	case inventoryV1.Category_CATEGORY_ENGINE:
-		return model.ENGINE
+		return model.CategoryEngine
 	case inventoryV1.Category_CATEGORY_FUEL:
-		return model.FUEL
+		return model.CategoryFuel
 	case inventoryV1.Category_CATEGORY_PORTHOLE:
-		return model.PORTHOLE
+		return model.CategoryPorthole
 	case inventoryV1.Category_CATEGORY_WING:
-		return model.WING
+		return model.CategoryWing
 	default:
-		return model.UNKNOWN
+		return model.CategoryUnknown
 	}
 }
 

@@ -3,13 +3,19 @@ package model
 type Category int
 
 const (
-	UNKNOWN Category = iota
-	ENGINE
-	FUEL
-	PORTHOLE
-	WING
+	CategoryUnknown Category = iota
+	CategoryEngine
+	CategoryFuel
+	CategoryPorthole
+	CategoryWing
 )
 
 func (c Category) String() string {
-	return [...]string{"North", "East", "South", "West"}[c]
+	return [...]string{
+		"Unknown",
+		"Engine",
+		"Fuel",
+		"Porthole",
+		"Wing",
+	}[c]
 }

@@ -86,7 +86,7 @@
     }
   },
   "definitions": {
-    "inventoryv1Value": {
+    "inventoryV1Value": {
       "type": "object",
       "properties": {
         "string_value": {
@@ -270,7 +270,7 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/inventoryv1Value"
+            "$ref": "#/definitions/inventoryV1Value"
           },
           "title": "доп. данные"
         },

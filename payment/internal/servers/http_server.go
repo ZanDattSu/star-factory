@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (
@@ -32,7 +32,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, er
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	err := inventoryV1.RegisterInventoryServiceHandlerFromEndpoint(
+	err := paymentV1.RegisterPaymentServiceHandlerFromEndpoint(
 		ctx,
 		mux,
 		fmt.Sprintf("localhost:%d", grpcPort),
@@ -64,7 +64,6 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 	if err := s.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("HTTP server shutdown error: %w", err)
 	}
-
 	return nil
 }
 
@@ -78,11 +77,11 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 
 	// Swagger UI эндпоинты
 	httpMux.Handle("/swagger-ui.html", fileServer)
-	httpMux.Handle("/inventory/v1/inventory.swagger.json", fileServer)
+	httpMux.Handle("/payment/v1/payment.swagger.json", fileServer)
 
 	// Редирект для swagger.json
 	httpMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, apiRelativePath+"/inventory/v1/inventory.swagger.json")
+		http.ServeFile(w, r, apiRelativePath+"/payment/v1/payment.swagger.json")
 	})
 
 	// Редирект с корня на Swagger UI
