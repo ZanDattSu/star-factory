@@ -3,145 +3,57 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
-	"inventory/internal/model"
-	"inventory/internal/repository/part"
-
-	"github.com/ZanDattSu/star-factory/shared/pkg/interceptor"
-	inventoryv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	partV1Api "inventory/internal/api/v1/part"
+	partRepo "inventory/internal/repository/part"
+	"inventory/internal/servers"
+	partService "inventory/internal/service/part"
 )
 
 const (
-	httpPort = 8081
 	grpcPort = 50051
+	httpPort = 8081
 
-	readHeaderTimeout = 5 * time.Second
-	shutdownTimeout   = 10 * time.Second
-
-	apiRelativePath = "../shared/api"
+	shutdownTimeout = 10 * time.Second
 )
 
-// InventoryService реализует gRPC-сервис управления деталями.
-type InventoryService struct {
-	inventoryv1.UnimplementedInventoryServiceServer
-	Storage *part.repository
-}
-
-func NewInventoryService(storage *part.repository) *InventoryService {
-	return &InventoryService{Storage: storage}
-}
-
-func (is *InventoryService) GetPart(_ context.Context, req *inventoryv1.GetPartRequest) (*model.Part, error) {
-	part, ok := is.Storage.GetPart(req.Uuid)
-	if !ok {
-		return nil, status.Errorf(codes.NotFound, "part %s not found", req.Uuid)
-	}
-
-	return part, nil
-}
-
 func main() {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	repo := partRepo.NewRepository()
+	repo.InitTestData()
+
+	service := partService.NewService(repo)
+	api := partV1Api.NewApi(service)
+
+	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
-		log.Printf("failed to listen: %v\n", err)
+		log.Println(err)
 		return
 	}
 
-	server := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			interceptor.LoggerInterceptor(),
-			interceptor.ValidationInterceptor(),
-		),
-	)
+	gatewayServer, err := servers.NewHTTPServer(httpPort)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	partStorage := part.NewRepository()
-	partStorage.InitTestData()
-
-	service := NewInventoryService(partStorage)
-
-	inventoryv1.RegisterInventoryServiceServer(server, service)
-
-	reflection.Register(server)
-
+	// Запускаем gRPC сервер
 	go func() {
-		log.Printf("🚀 gRPC server listening on %d\n", grpcPort)
-		err := server.Serve(listener)
-		if err != nil {
+		if err := gRPCServer.Serve(); err != nil {
 			log.Printf("failed to serve: %v\n", err)
 			return
 		}
 	}()
 
 	// Запускаем HTTP сервер с gRPC Gateway
-	var gatewayServer *http.Server
 	go func() {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		mux := runtime.NewServeMux()
-
-		opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		err := inventoryv1.RegisterInventoryServiceHandlerFromEndpoint(
-			ctx,
-			mux,
-			fmt.Sprintf("localhost:%d", grpcPort),
-			opts,
-		)
-		if err != nil {
-			log.Printf("Failed to register gateway: %v\n", err)
-			return
-		}
-
-		// Создаем файловый сервер для Swagger UI
-		fileServer := http.FileServer(http.Dir(apiRelativePath))
-
-		httpMux := http.NewServeMux()
-
-		httpMux.Handle("/api/", mux)
-
-		// Swagger UI эндпоинты
-		httpMux.Handle("/swagger-ui.html", fileServer)
-		httpMux.Handle("/inventory/v1/inventory.swagger.json", fileServer)
-
-		// Редирект для swagger.json
-		httpMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, apiRelativePath+"/inventory/v1/inventory.swagger.json")
-		})
-
-		// Редирект с корня на Swagger UI
-		httpMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-			if req.URL.Path == "/" {
-				http.Redirect(w, req, "/swagger-ui.html", http.StatusMovedPermanently)
-				return
-			}
-			fileServer.ServeHTTP(w, req)
-		})
-
-		gatewayServer = &http.Server{
-			Addr:              fmt.Sprintf(":%d", httpPort),
-			Handler:           httpMux,
-			ReadHeaderTimeout: readHeaderTimeout,
-		}
-
-		log.Printf("🌐 HTTP server with gRPC-Gateway listening on %d\n", httpPort)
-		err = gatewayServer.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("Failed to serve HTTP: %v\n", err)
+		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("failed to serve HTTP: %s\n", err)
 			return
 		}
 	}()
@@ -157,17 +69,13 @@ func main() {
 		defer cancel()
 
 		if err := gatewayServer.Shutdown(shutdownCtx); err != nil {
-			log.Printf("HTTP server shutdown error: %v", err)
+			log.Println(err)
+			return
 		}
-
-		log.Println("✅ HTTP server stopped")
 	}
 
-	log.Println("🛑 Shutting down gRPC server...")
-	if closeErr := listener.Close(); closeErr != nil {
-		log.Printf("failed to close listener: %v\n", closeErr)
+	if err = gRPCServer.Shutdown(); err != nil {
+		log.Println(err)
+		return
 	}
-
-	server.GracefulStop()
-	log.Println("✅ Server stopped")
 }

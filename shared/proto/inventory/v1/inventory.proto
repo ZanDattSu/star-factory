@@ -26,13 +26,13 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 service InventoryService {
   rpc GetPart(GetPartRequest) returns (GetPartResponse) {
     option (google.api.http) = {
-      get: "/api/v1/inventory/{uuid}"
+      get: "/api/v1/part/{uuid}"
     };
   }
 
   rpc ListParts(ListPartsRequest) returns (ListPartsResponse) {
     option (google.api.http) = {
-      post: "/api/v1/inventory/list"
+      post: "/api/v1/part/list"
       body: "*"
     };
   }

@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"maps"
-
 	"inventory/internal/model"
 	repoModel "inventory/internal/repository/model"
 )
@@ -20,7 +18,7 @@ func PartToRepoModel(part *model.Part) *repoModel.Part {
 		Dimensions:    DimensionsToRepoModel(part.Dimensions),
 		Manufacturer:  ManufacturerToRepoModel(part.Manufacturer),
 		Tags:          copySlice(part.Tags),
-		Metadata:      copyMap(part.Metadata),
+		Metadata:      MetadataToRepoModel(part.Metadata),
 		CreatedAt:     part.CreatedAt,
 		UpdatedAt:     part.UpdatedAt,
 	}
@@ -37,7 +35,7 @@ func PartToModel(p *repoModel.Part) *model.Part {
 		Dimensions:    DimensionsToModel(p.Dimensions),
 		Manufacturer:  ManufacturerToModel(p.Manufacturer),
 		Tags:          copySlice(p.Tags),
-		Metadata:      copyMap(p.Metadata),
+		Metadata:      MetadataToModel(p.Metadata),
 		CreatedAt:     p.CreatedAt,
 		UpdatedAt:     p.UpdatedAt,
 	}
@@ -135,6 +133,58 @@ func PartsFilterToModel(f repoModel.PartsFilter) model.PartsFilter {
 	}
 }
 
+// MetadataToRepoModel конвертирует map[string]*model.Value → map[string]*repoModel.Value.
+func MetadataToRepoModel(metadata map[string]*model.Value) map[string]*repoModel.Value {
+	if metadata == nil {
+		return nil
+	}
+
+	result := make(map[string]*repoModel.Value, len(metadata))
+	for key, value := range metadata {
+		if value == nil {
+			continue
+		}
+
+		switch {
+		case value.StringValue != nil:
+			result[key] = repoModel.NewStringValue(*value.StringValue)
+		case value.Int64Value != nil:
+			result[key] = repoModel.NewInt64Value(*value.Int64Value)
+		case value.DoubleValue != nil:
+			result[key] = repoModel.NewFloat64Value(*value.DoubleValue)
+		case value.BoolValue != nil:
+			result[key] = repoModel.NewBoolValue(*value.BoolValue)
+		default:
+			continue
+		}
+	}
+
+	return result
+}
+
+// MetadataToModel конвертирует map[string]*model.Value в map[string]*inventoryV1.Value
+func MetadataToModel(metadata map[string]*repoModel.Value) map[string]*model.Value {
+	if metadata == nil {
+		return nil
+	}
+
+	result := make(map[string]*model.Value, len(metadata))
+	for key, value := range metadata {
+		switch {
+		case value.StringValue != nil:
+			result[key] = model.NewStringValue(*value.StringValue)
+		case value.Int64Value != nil:
+			result[key] = model.NewInt64Value(*value.Int64Value)
+		case value.DoubleValue != nil:
+			result[key] = model.NewFloat64Value(*value.DoubleValue)
+		case value.BoolValue != nil:
+			result[key] = model.NewBoolValue(*value.BoolValue)
+		}
+	}
+
+	return result
+}
+
 // === Вспомогательные функции ===
 
 func copySlice[T any](sl []T) []T {
@@ -146,27 +196,18 @@ func copySlice[T any](sl []T) []T {
 	return dst
 }
 
-func copyMap[T comparable](src map[T]T) map[T]T {
-	if src == nil {
-		return nil
+func categoriesFromRepo(cats []repoModel.Category) []model.Category {
+	out := make([]model.Category, len(cats))
+	for i, c := range cats {
+		out[i] = model.Category(c)
 	}
-	dst := make(map[T]T, len(src))
-	maps.Copy(src, dst)
-	return dst
+	return out
 }
 
 func categoriesToRepo(cats []model.Category) []repoModel.Category {
 	out := make([]repoModel.Category, len(cats))
 	for i, c := range cats {
 		out[i] = repoModel.Category(c)
-	}
-	return out
-}
-
-func categoriesFromRepo(cats []repoModel.Category) []model.Category {
-	out := make([]model.Category, len(cats))
-	for i, c := range cats {
-		out[i] = model.Category(c)
 	}
 	return out
 }

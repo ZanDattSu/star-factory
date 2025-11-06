@@ -1,0 +1,13 @@
+type: object
+required:
+  - code
+  - message
+properties:
+  code:
+    type: integer
+    description: HTTP-код ошибки
+    example: 403
+  message:
+    type: string
+    description: Доступ к ресурсу запрещён
+    example: "Forbidden: You do not have permission to access this resource"

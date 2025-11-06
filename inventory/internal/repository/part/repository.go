@@ -1,9 +1,10 @@
 package part
 
 import (
+	"sync"
+
 	repo "inventory/internal/repository"
 	repoModel "inventory/internal/repository/model"
-	"sync"
 )
 
 // Компиляторная проверка: убеждаемся, что *repository реализует интерфейс PartRepository.
