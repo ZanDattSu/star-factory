@@ -17,6 +17,10 @@ type GRPCServer struct {
 	port     int
 }
 
+func (s *GRPCServer) GetPort() int {
+	return s.port
+}
+
 func NewGRPCServer(grpcPort int, api inventoryV1.InventoryServiceServer) (*GRPCServer, error) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
@@ -47,8 +51,4 @@ func (s *GRPCServer) Serve() error {
 func (s *GRPCServer) Shutdown() {
 	// GracefulStop автоматически закроет listener
 	s.server.GracefulStop()
-}
-
-func (s *GRPCServer) GetPort() int {
-	return s.port
 }

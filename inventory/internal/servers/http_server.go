@@ -23,8 +23,11 @@ type HTTPServer struct {
 	port   int
 }
 
-func NewHTTPServer(ctx context.Context, httpPort int, grpcPort int) (*HTTPServer, error) {
+func (s *HTTPServer) GetPort() int {
+	return s.port
+}
 
+func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -91,8 +94,4 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 		fileServer.ServeHTTP(w, req)
 	})
 	return httpMux
-}
-
-func (s *HTTPServer) GetPort() int {
-	return s.port
 }

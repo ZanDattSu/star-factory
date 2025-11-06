@@ -32,7 +32,8 @@ func main() {
 
 	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
-		log.Fatalf("failed to create gRPC server: %v", err)
+		log.Printf("failed to create gRPC server: %v\n", err)
+		return
 	}
 
 	// Запускаем gRPC сервер
@@ -49,7 +50,8 @@ func main() {
 
 	gatewayServer, err := servers.NewHTTPServer(ctx, httpPort, grpcPort)
 	if err != nil {
-		log.Fatalf("failed to create HTTP server: %v", err)
+		log.Printf("failed to create HTTP server: %v\n", err)
+		return
 	}
 
 	// Запускаем HTTP сервер с gRPC Gateway

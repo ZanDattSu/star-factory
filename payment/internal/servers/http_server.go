@@ -3,7 +3,6 @@ package servers
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -24,10 +23,11 @@ type HTTPServer struct {
 	port   int
 }
 
-func NewHTTPServer(httpPort int) (*HTTPServer, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (s *HTTPServer) GetPort() int {
+	return s.port
+}
 
+func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -35,7 +35,7 @@ func NewHTTPServer(httpPort int) (*HTTPServer, error) {
 	err := paymentV1.RegisterPaymentServiceHandlerFromEndpoint(
 		ctx,
 		mux,
-		fmt.Sprintf("localhost:%d", httpPort),
+		fmt.Sprintf("localhost:%d", grpcPort),
 		opts,
 	)
 	if err != nil {
@@ -57,7 +57,6 @@ func NewHTTPServer(httpPort int) (*HTTPServer, error) {
 }
 
 func (s *HTTPServer) Serve() error {
-	log.Printf("🌐 HTTP server with gRPC-Gateway listening on %d\n", s.port)
 	return s.server.ListenAndServe()
 }
 
@@ -65,7 +64,6 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 	if err := s.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("HTTP server shutdown error: %w", err)
 	}
-	log.Println("✅ HTTP server stopped")
 	return nil
 }
 

@@ -21,9 +21,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 
-	orderv1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
-	inventoryv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
-	paymentv1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
+	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (
@@ -39,23 +39,23 @@ const (
 
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{
-		orders: make(map[string]*orderv1.OrderDto),
+		orders: make(map[string]*orderV1.OrderDto),
 	}
 }
 
 type OrderStorage struct {
-	orders map[string]*orderv1.OrderDto
+	orders map[string]*orderV1.OrderDto
 	mu     sync.RWMutex
 }
 
-func (s *OrderStorage) GetOrder(uuid string) (*orderv1.OrderDto, bool) {
+func (s *OrderStorage) GetOrder(uuid string) (*orderV1.OrderDto, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	order, ok := s.orders[uuid]
 	return order, ok
 }
 
-func (s *OrderStorage) PutOrder(uuid string, order *orderv1.OrderDto) {
+func (s *OrderStorage) PutOrder(uuid string, order *orderV1.OrderDto) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.orders[uuid] = order
@@ -63,14 +63,14 @@ func (s *OrderStorage) PutOrder(uuid string, order *orderv1.OrderDto) {
 
 type OrderHandler struct {
 	storage             *OrderStorage
-	paymentGRPCClient   paymentv1.PaymentServiceClient
-	inventoryGRPCClient inventoryv1.InventoryServiceClient
+	paymentGRPCClient   paymentV1.PaymentServiceClient
+	inventoryGRPCClient inventoryV1.InventoryServiceClient
 }
 
 func NewOrderHandler(
 	storage *OrderStorage,
-	paymentClient paymentv1.PaymentServiceClient,
-	inventoryClient inventoryv1.InventoryServiceClient,
+	paymentClient paymentV1.PaymentServiceClient,
+	inventoryClient inventoryV1.InventoryServiceClient,
 ) *OrderHandler {
 	return &OrderHandler{
 		storage:             storage,
@@ -79,11 +79,11 @@ func NewOrderHandler(
 	}
 }
 
-func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrderRequest) (orderv1.CreateOrderRes, error) {
+func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error) {
 	parts, err := oh.inventoryGRPCClient.ListParts(
 		ctx,
-		&inventoryv1.ListPartsRequest{
-			Filter: &inventoryv1.PartsFilter{
+		&inventoryV1.ListPartsRequest{
+			Filter: &inventoryV1.PartsFilter{
 				Uuids: req.PartUuids,
 				// TODO параметры запросов
 				Names:                 nil,
@@ -96,12 +96,12 @@ func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrde
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return &orderv1.NotFoundError{
+			return &orderV1.NotFoundError{
 				Code:    404,
 				Message: "one or more parts not found",
 			}, nil
 		} else {
-			return &orderv1.InternalServerError{
+			return &orderV1.InternalServerError{
 				Code:    500,
 				Message: fmt.Sprintf("failed to list parts from inventory service: %v", err),
 			}, nil
@@ -109,7 +109,7 @@ func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrde
 	}
 
 	if len(parts.Parts) != len(req.PartUuids) {
-		return &orderv1.NotFoundError{
+		return &orderV1.NotFoundError{
 			Code:    404,
 			Message: "one or more parts not found",
 		}, nil
@@ -123,41 +123,41 @@ func (oh *OrderHandler) CreateOrder(ctx context.Context, req *orderv1.CreateOrde
 	}
 
 	orderUUID := uuid.New().String()
-	newOrder := &orderv1.OrderDto{
+	newOrder := &orderV1.OrderDto{
 		OrderUUID:  orderUUID,
 		UserUUID:   req.UserUUID,
 		PartUuids:  partUuids,
 		TotalPrice: totalPrice,
-		Status:     orderv1.OrderStatusPENDINGPAYMENT,
+		Status:     orderV1.OrderStatusPENDINGPAYMENT,
 	}
 	oh.storage.PutOrder(orderUUID, newOrder)
 
-	return &orderv1.CreateOrderResponse{
+	return &orderV1.CreateOrderResponse{
 		OrderUUID:  orderUUID,
 		TotalPrice: totalPrice,
 	}, nil
 }
 
-func convertPaymentMethod(method orderv1.PaymentMethod) paymentv1.PaymentMethod {
+func convertPaymentMethod(method orderV1.PaymentMethod) paymentV1.PaymentMethod {
 	switch method {
-	case orderv1.PaymentMethodCARD:
-		return paymentv1.PaymentMethod_PAYMENT_METHOD_CARD
-	case orderv1.PaymentMethodSBP:
-		return paymentv1.PaymentMethod_PAYMENT_METHOD_SBP
-	case orderv1.PaymentMethodCREDITCARD:
-		return paymentv1.PaymentMethod_PAYMENT_METHOD_CREDIT_CARD
-	case orderv1.PaymentMethodINVESTORMONEY:
-		return paymentv1.PaymentMethod_PAYMENT_METHOD_INVESTOR_MONEY
+	case orderV1.PaymentMethodCARD:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_CARD
+	case orderV1.PaymentMethodSBP:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_SBP
+	case orderV1.PaymentMethodCREDITCARD:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_CREDIT_CARD
+	case orderV1.PaymentMethodINVESTORMONEY:
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_INVESTOR_MONEY
 	default:
-		return paymentv1.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+		return paymentV1.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
 	}
 }
 
-func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderRequest, params orderv1.PayOrderParams) (orderv1.PayOrderRes, error) {
+func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params orderV1.PayOrderParams) (orderV1.PayOrderRes, error) {
 	orderUUID := params.OrderUUID
 
 	if orderUUID == "" {
-		return &orderv1.BadRequestError{
+		return &orderV1.BadRequestError{
 			Code:    400,
 			Message: "empty order UUID",
 		}, nil
@@ -170,7 +170,7 @@ func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderReque
 
 	paymentResponse, err := oh.paymentGRPCClient.PayOrder(
 		ctx,
-		&paymentv1.PayOrderRequest{
+		&paymentV1.PayOrderRequest{
 			OrderUuid:     order.OrderUUID,
 			UserUuid:      order.UserUUID,
 			PaymentMethod: convertPaymentMethod(req.PaymentMethod),
@@ -178,25 +178,25 @@ func (oh *OrderHandler) PayOrder(ctx context.Context, req *orderv1.PayOrderReque
 	if err != nil {
 		statusCode, ok := status.FromError(err)
 		if ok && statusCode.Code() == codes.Internal {
-			return &orderv1.InternalServerError{
+			return &orderV1.InternalServerError{
 				Code:    500,
 				Message: fmt.Sprintf("payment service internal error: %v", err),
 			}, nil
 		}
 	}
 
-	order.SetStatus(orderv1.OrderStatusPAID)
+	order.SetStatus(orderV1.OrderStatusPAID)
 	order.TransactionUUID.SetTo(paymentResponse.TransactionUuid)
-	order.PaymentMethod = orderv1.NewOptPaymentMethod(req.PaymentMethod)
+	order.PaymentMethod = orderV1.NewOptPaymentMethod(req.PaymentMethod)
 
 	oh.storage.PutOrder(order.OrderUUID, order)
 
-	return &orderv1.PayOrderResponse{
+	return &orderV1.PayOrderResponse{
 		TransactionUUID: order.GetTransactionUUID().Value,
 	}, nil
 }
 
-func (oh *OrderHandler) GetOrder(_ context.Context, params orderv1.GetOrderParams) (orderv1.GetOrderRes, error) {
+func (oh *OrderHandler) GetOrder(_ context.Context, params orderV1.GetOrderParams) (orderV1.GetOrderRes, error) {
 	orderUUID := params.OrderUUID
 	order, ok := oh.storage.GetOrder(orderUUID)
 	if !ok {
@@ -205,7 +205,7 @@ func (oh *OrderHandler) GetOrder(_ context.Context, params orderv1.GetOrderParam
 	return order, nil
 }
 
-func (oh *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrderParams) (orderv1.CancelOrderRes, error) {
+func (oh *OrderHandler) CancelOrder(_ context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error) {
 	orderUUID := params.OrderUUID
 
 	order, ok := oh.storage.GetOrder(orderUUID)
@@ -213,20 +213,20 @@ func (oh *OrderHandler) CancelOrder(_ context.Context, params orderv1.CancelOrde
 		return OrderNotFoundError(orderUUID), nil
 	}
 
-	var resp orderv1.CancelOrderRes
+	var resp orderV1.CancelOrderRes
 
 	switch order.GetStatus() {
-	case orderv1.OrderStatusPENDINGPAYMENT:
-		order.SetStatus(orderv1.OrderStatusCANCELLED)
+	case orderV1.OrderStatusPENDINGPAYMENT:
+		order.SetStatus(orderV1.OrderStatusCANCELLED)
 		oh.storage.PutOrder(order.OrderUUID, order)
-		resp = &orderv1.CancelOrderNoContent{}
-	case orderv1.OrderStatusPAID:
-		resp = &orderv1.ConflictError{
+		resp = &orderV1.CancelOrderNoContent{}
+	case orderV1.OrderStatusPAID:
+		resp = &orderV1.ConflictError{
 			Code:    409,
 			Message: "Cannot cancel a paid order",
 		}
-	case orderv1.OrderStatusCANCELLED:
-		resp = &orderv1.ConflictError{
+	case orderV1.OrderStatusCANCELLED:
+		resp = &orderV1.ConflictError{
 			Code:    409,
 			Message: "Cannot cancel a canceled order",
 		}
@@ -247,18 +247,18 @@ func getAddress(port string) string {
 	return net.JoinHostPort("localhost", port)
 }
 
-func (oh *OrderHandler) NewError(_ context.Context, err error) *orderv1.GenericErrorStatusCode {
-	return &orderv1.GenericErrorStatusCode{
+func (oh *OrderHandler) NewError(_ context.Context, err error) *orderV1.GenericErrorStatusCode {
+	return &orderV1.GenericErrorStatusCode{
 		StatusCode: http.StatusInternalServerError,
-		Response: orderv1.GenericError{
-			Code:    orderv1.NewOptInt(http.StatusInternalServerError),
-			Message: orderv1.NewOptString(err.Error()),
+		Response: orderV1.GenericError{
+			Code:    orderV1.NewOptInt(http.StatusInternalServerError),
+			Message: orderV1.NewOptString(err.Error()),
 		},
 	}
 }
 
-func OrderNotFoundError(orderUUID string) *orderv1.NotFoundError {
-	return &orderv1.NotFoundError{
+func OrderNotFoundError(orderUUID string) *orderV1.NotFoundError {
+	return &orderV1.NotFoundError{
 		Code:    404,
 		Message: fmt.Sprintf("Order %s not found", orderUUID),
 	}
@@ -277,7 +277,7 @@ func main() {
 		}
 	}()
 
-	paymentClient := paymentv1.NewPaymentServiceClient(conn)
+	paymentClient := paymentV1.NewPaymentServiceClient(conn)
 	log.Printf("✅ Успешно создан payment gRPC-клиент (%s)", paymentServicePort)
 
 	log.Println("======================================")
@@ -294,7 +294,7 @@ func main() {
 		}
 	}()
 
-	inventoryClient := inventoryv1.NewInventoryServiceClient(conn)
+	inventoryClient := inventoryV1.NewInventoryServiceClient(conn)
 	log.Printf("✅ Успешно создан inventory gRPC-клиент (%s)", inventoryServicePort)
 
 	log.Println("======================================")
@@ -305,7 +305,7 @@ func main() {
 	orderHandler := NewOrderHandler(orderStorage, paymentClient, inventoryClient)
 
 	log.Println("Создаем OpenAPI сервер")
-	orderServer, err := orderv1.NewServer(orderHandler)
+	orderServer, err := orderV1.NewServer(orderHandler)
 	if err != nil {
 		log.Printf("Ошибка создания сервера OpenAPI: %v", err)
 		return

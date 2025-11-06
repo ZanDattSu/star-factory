@@ -2,14 +2,13 @@ package servers
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"shared/pkg/interceptor"
 
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 type GRPCServer struct {
@@ -18,7 +17,11 @@ type GRPCServer struct {
 	port     int
 }
 
-func NewGRPCServer(grpcPort int, api inventoryV1.InventoryServiceServer) (*GRPCServer, error) {
+func (s *GRPCServer) GetPort() int {
+	return s.port
+}
+
+func NewGRPCServer(grpcPort int, api paymentV1.PaymentServiceServer) (*GRPCServer, error) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen: %w", err)
@@ -31,7 +34,7 @@ func NewGRPCServer(grpcPort int, api inventoryV1.InventoryServiceServer) (*GRPCS
 		),
 	)
 
-	inventoryV1.RegisterInventoryServiceServer(server, api)
+	paymentV1.RegisterPaymentServiceServer(server, api)
 	reflection.Register(server)
 
 	return &GRPCServer{
@@ -42,17 +45,10 @@ func NewGRPCServer(grpcPort int, api inventoryV1.InventoryServiceServer) (*GRPCS
 }
 
 func (s *GRPCServer) Serve() error {
-	log.Printf("🚀 gRPC server listening on %d\n", s.port)
 	return s.server.Serve(s.listener)
 }
 
-func (s *GRPCServer) Shutdown() error {
-	log.Println("🛑 Shutting down gRPC server...")
-	if closeErr := s.listener.Close(); closeErr != nil {
-		return fmt.Errorf("failed to close listener: %w", closeErr)
-	}
-
+func (s *GRPCServer) Shutdown() {
+	// GracefulStop автоматически закроет listener
 	s.server.GracefulStop()
-	log.Println("✅ Server stopped")
-	return nil
 }
