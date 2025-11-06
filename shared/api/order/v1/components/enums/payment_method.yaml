@@ -1,0 +1,15 @@
+type: string
+description: Способ оплаты
+enum:
+  - UNKNOWN
+  - CARD
+  - SBP
+  - CREDIT_CARD
+  - INVESTOR_MONEY
+x-enum-values:
+  UNKNOWN: 0
+  CARD: 1
+  SBP: 2
+  CREDIT_CARD: 3
+  INVESTOR_MONEY: 4
+example: CARD
