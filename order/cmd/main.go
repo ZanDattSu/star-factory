@@ -12,14 +12,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-faster/errors"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
+	httpServer "order/internal/server"
 
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
@@ -31,10 +30,7 @@ const (
 	paymentServicePort   = "50052"
 	inventoryServicePort = "50051"
 
-	// Таймауты для HTTP-сервера
-	responseTimeout   = 10 * time.Second
-	readHeaderTimeout = 5 * time.Second
-	shutdownTimeout   = 10 * time.Second
+	shutdownTimeout = 10 * time.Second
 )
 
 func NewOrderStorage() *OrderStorage {
@@ -265,96 +261,83 @@ func OrderNotFoundError(orderUUID string) *orderV1.NotFoundError {
 }
 
 func main() {
-	log.Println("Создаем payment gRPC клиент")
-	conn, err := newGRPCConnectWithoutSecure(paymentServicePort)
+	log.Println("Creating payment gRPC client...")
+	paymentConn, err := newGRPCConnectWithoutSecure(paymentServicePort)
 	if err != nil {
-		log.Printf("❌ Ошибка подключения к gRPC (%s): %v", inventoryServicePort, err)
+		log.Printf("❌ Failed to connect to payment gRPC service (%s): %v", inventoryServicePort, err)
 		return
 	}
 	defer func() {
-		if closeErr := conn.Close(); closeErr != nil {
-			log.Printf("failed to close connect: %v", closeErr)
+		if closeErr := paymentConn.Close(); closeErr != nil {
+			log.Printf("Failed to close payment gRPC connection: %v", closeErr)
 		}
 	}()
 
-	paymentClient := paymentV1.NewPaymentServiceClient(conn)
-	log.Printf("✅ Успешно создан payment gRPC-клиент (%s)", paymentServicePort)
+	paymentClient := paymentV1.NewPaymentServiceClient(paymentConn)
+	log.Printf("✅ Payment gRPC client created successfully (%s)", paymentServicePort)
 
 	log.Println("======================================")
 
-	log.Println("Создаем inventory gRPC клиент")
-	conn, err = newGRPCConnectWithoutSecure(inventoryServicePort)
+	log.Println("Creating inventory gRPC client...")
+	inventoryConn, err := newGRPCConnectWithoutSecure(inventoryServicePort)
 	if err != nil {
-		log.Printf("❌ Ошибка подключения к gRPC (%s): %v", inventoryServicePort, err)
+		log.Printf("❌ Failed to connect to inventory gRPC service (%s): %v", inventoryServicePort, err)
 		return
 	}
 	defer func() {
-		if closeErr := conn.Close(); closeErr != nil {
-			log.Printf("failed to close connect: %v", closeErr)
+		if closeErr := inventoryConn.Close(); closeErr != nil {
+			log.Printf("Failed to close inventory gRPC connection: %v", closeErr)
 		}
 	}()
 
-	inventoryClient := inventoryV1.NewInventoryServiceClient(conn)
-	log.Printf("✅ Успешно создан inventory gRPC-клиент (%s)", inventoryServicePort)
+	inventoryClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
+	log.Printf("✅ Inventory gRPC client created successfully (%s)", inventoryServicePort)
 
 	log.Println("======================================")
 
 	orderStorage := NewOrderStorage()
 
-	log.Println("Создаем обработчик Order API")
+	log.Println("Creating order API handler...")
 	orderHandler := NewOrderHandler(orderStorage, paymentClient, inventoryClient)
 
-	log.Println("Создаем OpenAPI сервер")
-	orderServer, err := orderV1.NewServer(orderHandler)
+	log.Println("Creating HTTP server...")
+	server, err := httpServer.NewHTTPServer(orderServicePort, orderHandler)
 	if err != nil {
-		log.Printf("Ошибка создания сервера OpenAPI: %v", err)
+		log.Printf("❌ Failed to create HTTP server: %v", err)
 		return
 	}
-
-	r := chi.NewRouter()
-
-	// Добавляем middleware
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(responseTimeout))
-
-	// Монтируем обработчики OpenAPI
-	r.Mount("/", orderServer)
-
-	server := http.Server{
-		Addr:              getAddress(orderServicePort),
-		Handler:           r,
-		ReadHeaderTimeout: readHeaderTimeout, // Защита от Slowloris атак - тип DDoS-атаки, при которой
-		// атакующий умышленно медленно отправляет HTTP-заголовки, удерживая соединения открытыми и истощая
-		// пул доступных соединений на сервере. ReadHeaderTimeout принудительно закрывает соединение,
-		// если клиент не успел отправить все заголовки за отведенное время.
-	}
+	log.Println("✅ HTTP server created successfully")
 
 	go func() {
-		log.Printf("HTTP-сервер запущен на порту %s\n", orderServicePort)
-		err := server.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("Ошибка запуска сервера: %v\n", err)
+		log.Printf("🌐 HTTP server listening on :%s\n", orderServicePort)
+		if err := server.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("HTTP server error: %v", err)
+			return
 		}
 	}()
 
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	// SIGTERM - "вежливая" просьба завершиться,
-	// SIGINT - прерывание с клавиатуры (Ctrl+C)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-	<-quit
+	gracefulShutdown()
 
-	log.Println("Завершение работы сервера...")
+	log.Println("Shutting down server...")
 
-	// Создаем контекст с таймаутом для остановки сервера
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	err = server.Shutdown(ctx)
-	if err != nil {
-		log.Printf("Ошибка при остановке сервера: %v\n", err)
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("server shutdown error: %v", err)
+		return
 	}
 
-	log.Println("✅ Сервер остановлен")
+	log.Println("✅ HTTP server stopped successfully")
+}
+
+// gracefulShutdown мягко завершает работу программы
+// когда в канал quit поступает один из сисколлов ОС
+//
+// SIGTERM - "вежливая" просьба завершиться,
+// SIGINT - прерывание с клавиатуры (Ctrl+C)
+func gracefulShutdown() {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
 }

@@ -3,7 +3,9 @@ package servers
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -35,7 +37,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, er
 	err := inventoryV1.RegisterInventoryServiceHandlerFromEndpoint(
 		ctx,
 		mux,
-		fmt.Sprintf("localhost:%d", grpcPort),
+		setEndpoint(grpcPort),
 		opts,
 	)
 	if err != nil {
@@ -45,7 +47,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, er
 	httpMux := registerSwaggerMux(mux)
 
 	gatewayServer := &http.Server{
-		Addr:              fmt.Sprintf(":%d", httpPort),
+		Addr:              setEndpoint(httpPort),
 		Handler:           httpMux,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
@@ -94,4 +96,8 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 		fileServer.ServeHTTP(w, req)
 	})
 	return httpMux
+}
+
+func setEndpoint(port int) string {
+	return net.JoinHostPort("localhost", strconv.Itoa(port))
 }

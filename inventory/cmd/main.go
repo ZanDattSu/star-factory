@@ -65,23 +65,28 @@ func main() {
 
 	gracefulShutdown()
 
-	log.Println("⚠️  Shutting down servers...")
+	log.Println("🛑 Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
 	// Сначала останавливаем HTTP сервер
-	log.Println("🛑 Shutting down HTTP server...")
+	log.Println("Shutting down HTTP server...")
 	if err := gatewayServer.Shutdown(shutdownCtx); err != nil {
 		log.Printf("HTTP shutdown error: %v", err)
 	}
 	log.Println("✅ HTTP server stopped")
 
-	log.Println("🛑 Shutting down gRPC server...")
+	log.Println("Shutting down gRPC server...")
 	gRPCServer.Shutdown()
 	log.Println("✅ gRPC server stopped")
 }
 
+// gracefulShutdown мягко завершает работу программы
+// когда в канал quit поступает один из сисколлов ОС
+//
+// SIGTERM - "вежливая" просьба завершиться,
+// SIGINT - прерывание с клавиатуры (Ctrl+C)
 func gracefulShutdown() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
