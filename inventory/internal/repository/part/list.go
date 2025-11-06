@@ -11,11 +11,11 @@ import (
 // ListParts возвращает отфильтрованный список деталей.
 // Использует pipeline для последовательной фильтрации с AND-логикой между полями
 // и OR-логикой внутри каждого поля.
-func (r *repository) ListParts(_ context.Context, filter *model.PartsFilter) ([]*model.Part, error) {
+func (r *repository) ListParts(_ context.Context, filter *model.PartsFilter) []*model.Part {
 	parts := r.Values()
 
 	if filterIsEmpty(filter) {
-		return parts, nil
+		return parts
 	}
 
 	repoParts := converter.PartsToRepoModel(parts)
@@ -25,7 +25,7 @@ func (r *repository) ListParts(_ context.Context, filter *model.PartsFilter) ([]
 	pipeline := buildFilterPipeline(&repoFilter)
 	filteredParts := applyFilterPipeline(repoParts, pipeline)
 
-	return converter.PartsToModel(filteredParts), nil
+	return converter.PartsToModel(filteredParts)
 }
 
 // filterIsEmpty проверяет, пустой ли фильтр.
