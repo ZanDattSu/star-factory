@@ -9,11 +9,11 @@ get:
     - $ref: "../params/order_uuid.yaml"
   responses:
     '200':
-      description: Информация о заказе
+      description: Order info
       content:
         application/json:
           schema:
-            $ref: '../components/get_order_response.yaml'
+            $ref: '../components/order_dto.yaml'
     '400':
       description: Bad request
       content:

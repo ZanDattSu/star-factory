@@ -3,7 +3,7 @@ parameters:
 
 post:
   summary: Оплатить заказ
-  operationId: OrderPay
+  operationId: PayOrder
   tags:
     - Order
   description:
@@ -24,13 +24,13 @@ post:
           schema:
             $ref: "../components/pay_order_response.yaml"
     '400':
-      description: Bad request
+      description: Bad Request - invalid parameter format
       content:
         application/json:
           schema:
             $ref: "../components/errors/bad_request_error.yaml"
     '404':
-      description: Not found error
+      description: Order not found error
       content:
         application/json:
           schema:

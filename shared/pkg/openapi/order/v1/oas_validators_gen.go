@@ -127,6 +127,8 @@ func (s *OrderDto) Validate() error {
 
 func (s OrderStatus) Validate() error {
 	switch s {
+	case "NOT_SET":
+		return nil
 	case "PENDING_PAYMENT":
 		return nil
 	case "PAID":

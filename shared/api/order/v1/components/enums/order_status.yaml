@@ -1,6 +1,7 @@
 type: string
 description: Статус заказа
 enum:
+  - NOT_SET
   - PENDING_PAYMENT
   - PAID
   - CANCELLED

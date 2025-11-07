@@ -1,21 +1,11 @@
 package model
 
-type Category int
+type Category string
 
 const (
-	CategoryUnknown Category = iota
-	CategoryEngine
-	CategoryFuel
-	CategoryPorthole
-	CategoryWing
+	CategoryUnspecified Category = "UNSPECIFIED"
+	CategoryEngine      Category = "ENGINE"
+	CategoryFuel        Category = "FUEL"
+	CategoryPorthole    Category = "PORTHOLE"
+	CategoryWing        Category = "WING"
 )
-
-func (c Category) String() string {
-	return [...]string{
-		"Unknown",
-		"Engine",
-		"Fuel",
-		"Porthole",
-		"Wing",
-	}[c]
-}

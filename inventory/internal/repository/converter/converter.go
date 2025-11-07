@@ -8,6 +8,9 @@ import (
 // === Part ===
 
 func PartToRepoModel(part *model.Part) *repoModel.Part {
+	if part == nil {
+		return nil
+	}
 	return &repoModel.Part{
 		Uuid:          part.Uuid,
 		Name:          part.Name,
@@ -17,7 +20,7 @@ func PartToRepoModel(part *model.Part) *repoModel.Part {
 		Category:      repoModel.Category(part.Category),
 		Dimensions:    DimensionsToRepoModel(part.Dimensions),
 		Manufacturer:  ManufacturerToRepoModel(part.Manufacturer),
-		Tags:          copySlice(part.Tags),
+		Tags:          part.Tags,
 		Metadata:      MetadataToRepoModel(part.Metadata),
 		CreatedAt:     part.CreatedAt,
 		UpdatedAt:     part.UpdatedAt,
@@ -25,6 +28,9 @@ func PartToRepoModel(part *model.Part) *repoModel.Part {
 }
 
 func PartToModel(p *repoModel.Part) *model.Part {
+	if p == nil {
+		return nil
+	}
 	return &model.Part{
 		Uuid:          p.Uuid,
 		Name:          p.Name,
@@ -34,7 +40,7 @@ func PartToModel(p *repoModel.Part) *model.Part {
 		Category:      model.Category(p.Category),
 		Dimensions:    DimensionsToModel(p.Dimensions),
 		Manufacturer:  ManufacturerToModel(p.Manufacturer),
-		Tags:          copySlice(p.Tags),
+		Tags:          p.Tags,
 		Metadata:      MetadataToModel(p.Metadata),
 		CreatedAt:     p.CreatedAt,
 		UpdatedAt:     p.UpdatedAt,
@@ -115,21 +121,21 @@ func ManufacturerToModel(m *repoModel.Manufacturer) *model.Manufacturer {
 
 func PartsFilterToRepoModel(f model.PartsFilter) repoModel.PartsFilter {
 	return repoModel.PartsFilter{
-		Uuids:                 copySlice(f.Uuids),
-		Names:                 copySlice(f.Names),
+		Uuids:                 f.Uuids,
+		Names:                 f.Names,
 		Categories:            categoriesToRepo(f.Categories),
-		ManufacturerCountries: copySlice(f.ManufacturerCountries),
-		Tags:                  copySlice(f.Tags),
+		ManufacturerCountries: f.ManufacturerCountries,
+		Tags:                  f.Tags,
 	}
 }
 
 func PartsFilterToModel(f repoModel.PartsFilter) model.PartsFilter {
 	return model.PartsFilter{
-		Uuids:                 copySlice(f.Uuids),
-		Names:                 copySlice(f.Names),
+		Uuids:                 f.Uuids,
+		Names:                 f.Names,
 		Categories:            categoriesFromRepo(f.Categories),
-		ManufacturerCountries: copySlice(f.ManufacturerCountries),
-		Tags:                  copySlice(f.Tags),
+		ManufacturerCountries: f.ManufacturerCountries,
+		Tags:                  f.Tags,
 	}
 }
 
@@ -186,15 +192,6 @@ func MetadataToModel(metadata map[string]*repoModel.Value) map[string]*model.Val
 }
 
 // === Вспомогательные функции ===
-
-func copySlice[T any](sl []T) []T {
-	if sl == nil {
-		return nil
-	}
-	dst := make([]T, len(sl))
-	copy(dst, sl)
-	return dst
-}
 
 func categoriesFromRepo(cats []repoModel.Category) []model.Category {
 	out := make([]model.Category, len(cats))

@@ -22,7 +22,7 @@ func LoggerInterceptor() grpc.UnaryServerInterceptor {
 		// Извлекаем имя метода из полного пути
 		method := path.Base(info.FullMethod)
 
-		log.Printf("🚀 Started gRPC method %s\n", method)
+		log.Printf("Started gRPC method %s\n", method)
 
 		startTime := time.Now()
 
@@ -32,9 +32,9 @@ func LoggerInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			st, _ := status.FromError(err)
-			log.Printf("❌ Finished gRPC method %s with code %s: %v (took: %v)\n", method, st.Code(), err, duration)
+			log.Printf("Finished gRPC method %s with code %s: %v (took: %v)\n", method, st.Code(), err, duration)
 		} else {
-			log.Printf("✅ Finished gRPC method %s successfully (took: %v)\n", method, duration)
+			log.Printf("Finished gRPC method %s successfully (took: %v)\n", method, duration)
 		}
 
 		return resp, err

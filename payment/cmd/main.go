@@ -33,7 +33,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("🚀 gRPC server listening on %d\n", gRPCServer.GetPort())
+		log.Printf("gRPC server listening on %d\n", gRPCServer.GetPort())
 		if err := gRPCServer.Serve(); err != nil {
 			log.Printf("gRPC server failed: %v", err)
 			return
@@ -51,7 +51,7 @@ func main() {
 
 	// Запускаем HTTP сервер с gRPC Gateway
 	go func() {
-		log.Printf("🌐 HTTP server with gRPC-Gateway listening on %d\n", gatewayServer.GetPort())
+		log.Printf("HTTP server with gRPC-Gateway listening on %d\n", gatewayServer.GetPort())
 		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("failed to serve HTTP: %s\n", err)
 			return
@@ -61,7 +61,7 @@ func main() {
 	// Graceful shutdown
 	gracefulShutdown()
 
-	log.Println("🛑 Shutting down servers...")
+	log.Println("Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
@@ -71,11 +71,11 @@ func main() {
 	if err := gatewayServer.Shutdown(shutdownCtx); err != nil {
 		log.Printf("HTTP shutdown error: %v", err)
 	}
-	log.Println("✅ HTTP server stopped")
+	log.Println("HTTP server stopped")
 
 	log.Println("Shutting down gRPC server...")
 	gRPCServer.Shutdown()
-	log.Println("✅ gRPC server stopped")
+	log.Println("gRPC server stopped")
 }
 
 // gracefulShutdown мягко завершает работу программы

@@ -40,8 +40,10 @@ func (s *BadRequestError) SetMessage(val string) {
 	s.Message = val
 }
 
-func (*BadRequestError) getOrderRes() {}
-func (*BadRequestError) payOrderRes() {}
+func (*BadRequestError) cancelOrderRes() {}
+func (*BadRequestError) createOrderRes() {}
+func (*BadRequestError) getOrderRes()    {}
+func (*BadRequestError) payOrderRes()    {}
 
 // CancelOrderNoContent is response for CancelOrder operation.
 type CancelOrderNoContent struct{}
@@ -488,6 +490,7 @@ func (*OrderDto) getOrderRes() {}
 type OrderStatus string
 
 const (
+	OrderStatusNOTSET         OrderStatus = "NOT_SET"
 	OrderStatusPENDINGPAYMENT OrderStatus = "PENDING_PAYMENT"
 	OrderStatusPAID           OrderStatus = "PAID"
 	OrderStatusCANCELLED      OrderStatus = "CANCELLED"
@@ -496,6 +499,7 @@ const (
 // AllValues returns all OrderStatus values.
 func (OrderStatus) AllValues() []OrderStatus {
 	return []OrderStatus{
+		OrderStatusNOTSET,
 		OrderStatusPENDINGPAYMENT,
 		OrderStatusPAID,
 		OrderStatusCANCELLED,
@@ -505,6 +509,8 @@ func (OrderStatus) AllValues() []OrderStatus {
 // MarshalText implements encoding.TextMarshaler.
 func (s OrderStatus) MarshalText() ([]byte, error) {
 	switch s {
+	case OrderStatusNOTSET:
+		return []byte(s), nil
 	case OrderStatusPENDINGPAYMENT:
 		return []byte(s), nil
 	case OrderStatusPAID:
@@ -519,6 +525,9 @@ func (s OrderStatus) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *OrderStatus) UnmarshalText(data []byte) error {
 	switch OrderStatus(data) {
+	case OrderStatusNOTSET:
+		*s = OrderStatusNOTSET
+		return nil
 	case OrderStatusPENDINGPAYMENT:
 		*s = OrderStatusPENDINGPAYMENT
 		return nil
@@ -629,33 +638,3 @@ func (s *PaymentMethod) UnmarshalText(data []byte) error {
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
-
-// Ref: #/components/schemas/validation_error
-type ValidationError struct {
-	// HTTP-код ошибки.
-	Code int `json:"code"`
-	// Ошибка бизнес-валидации запроса.
-	Message string `json:"message"`
-}
-
-// GetCode returns the value of Code.
-func (s *ValidationError) GetCode() int {
-	return s.Code
-}
-
-// GetMessage returns the value of Message.
-func (s *ValidationError) GetMessage() string {
-	return s.Message
-}
-
-// SetCode sets the value of Code.
-func (s *ValidationError) SetCode(val int) {
-	s.Code = val
-}
-
-// SetMessage sets the value of Message.
-func (s *ValidationError) SetMessage(val string) {
-	s.Message = val
-}
-
-func (*ValidationError) createOrderRes() {}

@@ -15,7 +15,7 @@ func (r *repository) InitTestData() {
 			Description:   "Мощный ракетный двигатель",
 			Price:         15000.0,
 			StockQuantity: 5,
-			Category:      1, // например, 1 = ENGINE
+			Category:      repoModel.CategoryEngine,
 			Dimensions: &repoModel.Dimensions{
 				Length: 200,
 				Width:  100,
@@ -38,7 +38,7 @@ func (r *repository) InitTestData() {
 			Description:   "Бак для хранения топлива",
 			Price:         8000.0,
 			StockQuantity: 8,
-			Category:      2, // например, 2 = FUEL
+			Category:      repoModel.CategoryFuel,
 			Dimensions: &repoModel.Dimensions{
 				Length: 150,
 				Width:  150,
@@ -61,7 +61,7 @@ func (r *repository) InitTestData() {
 			Description:   "Прочный иллюминатор для ракеты",
 			Price:         3000.0,
 			StockQuantity: 15,
-			Category:      3, // например, 3 = PORTHOLE
+			Category:      repoModel.CategoryPorthole,
 			Dimensions: &repoModel.Dimensions{
 				Length: 50,
 				Width:  50,
@@ -84,7 +84,7 @@ func (r *repository) InitTestData() {
 			Description:   "Аэродинамическое крыло",
 			Price:         5000.0,
 			StockQuantity: 12,
-			Category:      4, // например, 4 = WING
+			Category:      repoModel.CategoryWing,
 			Dimensions: &repoModel.Dimensions{
 				Length: 300,
 				Width:  50,
@@ -107,7 +107,7 @@ func (r *repository) InitTestData() {
 			Description:   "Электронная панель управления",
 			Price:         7000.0,
 			StockQuantity: 7,
-			Category:      0, // например, 0 = UNKNOWN
+			Category:      repoModel.CategoryUnspecified,
 			Dimensions: &repoModel.Dimensions{
 				Length: 80,
 				Width:  40,
