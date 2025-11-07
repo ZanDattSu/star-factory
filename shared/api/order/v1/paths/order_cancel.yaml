@@ -9,9 +9,15 @@ post:
     - $ref: "../params/order_uuid.yaml"
   responses:
     '204':
-      description: Заказ успешно отменён
+      description: Order successfully cancelled
+    '400':
+      description: Bad Request - invalid parameter format
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/bad_request_error.yaml"
     '404':
-      description: Not Found
+      description: Order Not Found
       content:
         application/json:
           schema:

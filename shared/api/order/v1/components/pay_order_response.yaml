@@ -4,7 +4,6 @@ required:
 properties:
   transaction_uuid:
     type: string
-    format: uuid
     description: Уникальный идентификатор транзакции оплаты
     example: "44444444-4444-4444-4444-444444444444"
 example:

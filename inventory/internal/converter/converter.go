@@ -24,7 +24,7 @@ func PartToProto(part *model.Part) *inventoryV1.Part {
 		Category:      CategoryToProto(part.Category),
 		Dimensions:    DimensionsToProto(part.Dimensions),
 		Manufacturer:  ManufacturerToProto(part.Manufacturer),
-		Tags:          copySlice(part.Tags),
+		Tags:          part.Tags,
 		Metadata:      MetadataToProto(part.Metadata),
 		CreatedAt:     timestamppb.New(part.CreatedAt),
 		UpdatedAt:     timestamppb.New(part.UpdatedAt),
@@ -46,7 +46,7 @@ func PartToModel(part *inventoryV1.Part) *model.Part {
 		Category:      CategoryToModel(part.Category),
 		Dimensions:    DimensionsToModel(part.Dimensions),
 		Manufacturer:  ManufacturerToModel(part.Manufacturer),
-		Tags:          copySlice(part.Tags),
+		Tags:          part.Tags,
 		Metadata:      MetadataToModel(part.Metadata),
 		CreatedAt:     part.CreatedAt.AsTime(),
 		UpdatedAt:     part.UpdatedAt.AsTime(),
@@ -161,7 +161,7 @@ func CategoryToModel(category inventoryV1.Category) model.Category {
 	case inventoryV1.Category_CATEGORY_WING:
 		return model.CategoryWing
 	default:
-		return model.CategoryUnknown
+		return model.CategoryUnspecified
 	}
 }
 
@@ -230,11 +230,11 @@ func MetadataToModel(metadata map[string]*inventoryV1.Value) map[string]*model.V
 // PartsFilterToProto конвертирует model.PartsFilter в protobuf PartsFilter
 func PartsFilterToProto(filter model.PartsFilter) *inventoryV1.PartsFilter {
 	return &inventoryV1.PartsFilter{
-		Uuids:                 copySlice(filter.Uuids),
-		Names:                 copySlice(filter.Names),
+		Uuids:                 filter.Uuids,
+		Names:                 filter.Names,
 		Categories:            categoriesToProto(filter.Categories),
-		ManufacturerCountries: copySlice(filter.ManufacturerCountries),
-		Tags:                  copySlice(filter.Tags),
+		ManufacturerCountries: filter.ManufacturerCountries,
+		Tags:                  filter.Tags,
 	}
 }
 
@@ -245,24 +245,15 @@ func PartsFilterToModel(filter *inventoryV1.PartsFilter) *model.PartsFilter {
 	}
 
 	return &model.PartsFilter{
-		Uuids:                 copySlice(filter.Uuids),
-		Names:                 copySlice(filter.Names),
+		Uuids:                 filter.Uuids,
+		Names:                 filter.Names,
 		Categories:            categoriesFromProto(filter.Categories),
-		ManufacturerCountries: copySlice(filter.ManufacturerCountries),
-		Tags:                  copySlice(filter.Tags),
+		ManufacturerCountries: filter.ManufacturerCountries,
+		Tags:                  filter.Tags,
 	}
 }
 
 // === Вспомогательные функции ===
-
-func copySlice[T any](sl []T) []T {
-	if sl == nil {
-		return nil
-	}
-	dst := make([]T, len(sl))
-	copy(dst, sl)
-	return dst
-}
 
 func categoriesToProto(cats []model.Category) []inventoryV1.Category {
 	out := make([]inventoryV1.Category, len(cats))

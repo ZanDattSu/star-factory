@@ -4,5 +4,4 @@ required: true
 description: Уникальный идентификатор заказа
 schema:
   type: string
-  format: uuid
   example: "aaaaaaaa-1111-bbbb-2222-cccccccccccc"
