@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,6 +24,8 @@ const (
 )
 
 func main() {
+	logger := setupLogger()
+
 	repo := partRepo.NewRepository()
 	repo.InitTestData()
 
@@ -32,15 +34,15 @@ func main() {
 
 	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
-		log.Printf("failed to create gRPC server: %v\n", err)
+		logger.Error("failed to create gRPC server", slogErr(err))
 		return
 	}
 
 	// Запускаем gRPC сервер
 	go func() {
-		log.Printf("gRPC server listening on %d\n", gRPCServer.GetPort())
+		logger.Info("gRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
 		if err := gRPCServer.Serve(); err != nil {
-			log.Printf("gRPC server failed: %v", err)
+			logger.Error("gRPC server failed", slogErr(err))
 			return
 		}
 	}()
@@ -50,36 +52,54 @@ func main() {
 
 	gatewayServer, err := servers.NewHTTPServer(ctx, httpPort, grpcPort)
 	if err != nil {
-		log.Printf("failed to create HTTP server: %v\n", err)
+		logger.Error("failed to create HTTP server", slogErr(err))
 		return
 	}
 
 	// Запускаем HTTP сервер с gRPC Gateway
 	go func() {
-		log.Printf("HTTP server with gRPC-Gateway listening on %d\n", gatewayServer.GetPort())
+		logger.Info("HTTP server with gRPC-Gateway listening on", slog.Int("port", gatewayServer.GetPort()))
 		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("failed to serve HTTP: %s\n", err)
+			logger.Error("failed to serve HTTP", slogErr(err))
 			return
 		}
 	}()
 
 	gracefulShutdown()
 
-	log.Println("Shutting down servers...")
+	logger.Info("Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
 	// Сначала останавливаем HTTP сервер
-	log.Println("Shutting down HTTP server...")
+	logger.Info("Shutting down HTTP server...")
 	if err := gatewayServer.Shutdown(shutdownCtx); err != nil {
-		log.Printf("HTTP shutdown error: %v", err)
+		logger.Error("HTTP shutdown error", slogErr(err))
 	}
-	log.Println("HTTP server stopped")
+	logger.Info("HTTP server stopped")
 
-	log.Println("Shutting down gRPC server...")
+	logger.Info("Shutting down gRPC server...")
 	gRPCServer.Shutdown()
-	log.Println("gRPC server stopped")
+	logger.Info("gRPC server stopped")
+}
+
+func slogErr(err error) slog.Attr {
+	return slog.Attr{
+		Key:   "Error",
+		Value: slog.StringValue(err.Error()),
+	}
+}
+
+func setupLogger() *slog.Logger {
+	return slog.New(
+		slog.NewTextHandler(
+			os.Stdout,
+			&slog.HandlerOptions{
+				Level: slog.LevelInfo,
+			},
+		),
+	)
 }
 
 // gracefulShutdown мягко завершает работу программы

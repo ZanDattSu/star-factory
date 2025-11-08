@@ -1,0 +1,35 @@
+with-expecter: true # Включает поддержку Expecter для моков (проверка вызовов методов).
+dir: "{{.InterfaceDir}}/mocks"
+filename: "mock_{{.InterfaceNameSnake}}.go" # Имя файла в формате snake_case.
+outpkg: "mocks"
+mockname: "{{.InterfaceName}}"
+resolve-type-alias: False # Отключает разрешение алиасов типов.
+issue-845-fix: True
+
+packages:
+  # services
+  github.com/ZanDattSu/star-factory/inventory/internal/service:
+    config:
+      include-regex: ".*Service"  # Включает только интерфейсы, содержащие 'Service' в названии
+
+  github.com/ZanDattSu/star-factory/order/internal/service:
+    config:
+      include-regex: ".*Service"
+
+  github.com/ZanDattSu/star-factory/payment/internal/service:
+    config:
+      include-regex: ".*Service"
+
+  # repository
+  github.com/ZanDattSu/star-factory/inventory/internal/repository:
+    config:
+      include-regex: ".*Repository"  # Включает только интерфейсы, содержащие 'Repository' в названии
+
+  github.com/ZanDattSu/star-factory/order/internal/repository:
+    config:
+      include-regex: ".*Repository"
+
+#  У payment нет репозитория, если в будущем появится раскомменитить
+#  github.com/ZanDattSu/star-factory/payment/internal/repository:
+#    config:
+#      include-regex: ".*Repository"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -43,74 +43,97 @@ func getAddress(port string) string {
 }
 
 func main() {
-	log.Println("Creating payment gRPC client...")
+	logger := setupLogger()
+
+	logger.Info("Creating payment gRPC client...")
+
 	paymentConn, err := newGRPCConnectWithoutSecure(paymentServicePort)
 	if err != nil {
-		log.Printf("Failed to connect to payment gRPC service (%s): %v", inventoryServicePort, err)
+		logger.Error("Failed to connect to payment gRPC service", slog.String("port", paymentServicePort), slogErr(err))
+		// logger.Error("Failed to connect to payment gRPC service (%s): %v", inventoryServicePort, err)
 		return
 	}
 	defer func() {
 		if closeErr := paymentConn.Close(); closeErr != nil {
-			log.Printf("Failed to close payment gRPC connection: %v", closeErr)
+			logger.Warn("Failed to close payment gRPC connection", slogErr(closeErr))
 		}
 	}()
 
 	paymentClient := paymentV1.NewPaymentServiceClient(paymentConn)
-	log.Printf("Payment gRPC client created successfully (%s)", paymentServicePort)
+	logger.Info("Payment gRPC client created successfully", slog.String("port", paymentServicePort))
 
-	log.Println("======================================")
+	logger.Info("======================================")
 
-	log.Println("Creating inventory gRPC client...")
+	logger.Info("Creating inventory gRPC client...")
+
 	inventoryConn, err := newGRPCConnectWithoutSecure(inventoryServicePort)
 	if err != nil {
-		log.Printf("Failed to connect to inventory gRPC service (%s): %v", inventoryServicePort, err)
+		logger.Error("Failed to connect to inventory gRPC service", slog.String("port", inventoryServicePort), slogErr(err))
 		return
 	}
 	defer func() {
 		if closeErr := inventoryConn.Close(); closeErr != nil {
-			log.Printf("Failed to close inventory gRPC connection: %v", closeErr)
+			logger.Warn("Failed to close inventory gRPC connection", slogErr(closeErr))
 		}
 	}()
 
 	inventoryClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
-	log.Printf("Inventory gRPC client created successfully (%s)", inventoryServicePort)
+	logger.Info("Inventory gRPC client created successfully", slog.String("port", inventoryServicePort))
 
-	log.Println("======================================")
+	logger.Info("======================================")
 
-	log.Println("Creating order API handler...")
+	logger.Info("Creating order API handler...")
 	orderStorage := ordRepo.NewRepository()
 	orderService := ordService.NewService(orderStorage, paymentClient, inventoryClient)
 	api := ordApi.NewApi(orderService)
 
-	log.Println("Creating HTTP server...")
+	logger.Info("Creating HTTP server...")
 	server, err := httpServer.NewHTTPServer(orderServicePort, api)
 	if err != nil {
-		log.Printf("Failed to create HTTP server: %v", err)
+		logger.Error("Failed to create HTTP server", slogErr(err))
 		return
 	}
-	log.Println("HTTP server created successfully")
+	logger.Info("HTTP server created successfully")
 
 	go func() {
-		log.Printf("HTTP server listening on :%s\n", orderServicePort)
+		logger.Info("HTTP server listening", slog.String("port", orderServicePort))
 		if err := server.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("HTTP server error: %v", err)
+			logger.Error("HTTP server error", slogErr(err))
 			return
 		}
 	}()
 
 	gracefulShutdown()
 
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("server shutdown error: %v", err)
+		logger.Error("server shutdown error", slogErr(err))
 		return
 	}
 
-	log.Println("HTTP server stopped successfully")
+	logger.Info("HTTP server stopped successfully")
+}
+
+func slogErr(err error) slog.Attr {
+	return slog.Attr{
+		Key:   "Error",
+		Value: slog.StringValue(err.Error()),
+	}
+}
+
+func setupLogger() *slog.Logger {
+	return slog.New(
+		slog.NewTextHandler(
+			os.Stdout,
+			&slog.HandlerOptions{
+				Level: slog.LevelInfo,
+			},
+		),
+	)
 }
 
 // gracefulShutdown мягко завершает работу программы
