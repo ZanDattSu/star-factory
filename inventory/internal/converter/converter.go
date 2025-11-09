@@ -1,9 +1,10 @@
 package converter
 
 import (
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"inventory/internal/model"
+
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
 // === Part ===

@@ -10,8 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
-	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 	"github.com/go-faster/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,6 +19,9 @@ import (
 	ordRepo "order/internal/repository/order"
 	httpServer "order/internal/server"
 	ordService "order/internal/service/order"
+
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (

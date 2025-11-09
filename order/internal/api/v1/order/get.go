@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 	"order/internal/converter"
 	"order/internal/model"
+
+	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 
 func (a *api) GetOrder(ctx context.Context, params orderV1.GetOrderParams) (orderV1.GetOrderRes, error) {

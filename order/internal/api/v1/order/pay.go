@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 	"order/internal/converter"
 	"order/internal/model"
+
+	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 
 func (a *api) PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params orderV1.PayOrderParams) (orderV1.PayOrderRes, error) {

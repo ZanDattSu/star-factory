@@ -1,8 +1,9 @@
 package converter
 
 import (
-	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 	"order/internal/model"
+
+	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 
 // OrderToAPI конвертирует service-модель → OpenAPI DTO.

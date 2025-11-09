@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net"
 
-	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"shared/pkg/interceptor"
+
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 type GRPCServer struct {

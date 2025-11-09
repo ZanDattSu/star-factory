@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"order/internal/client/converter"
 	"order/internal/model"
+
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
 func (c *client) ListParts(ctx context.Context, partsFilter model.PartsFilter) ([]*model.Part, error) {
