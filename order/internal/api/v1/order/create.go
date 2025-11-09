@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	inventoryV1 "order/internal/client/grpc/inventory/v1"
-
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	inventoryV1 "order/internal/client/grpc/inventory/v1"
 )
 
 func (a *api) CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error) {

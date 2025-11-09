@@ -1,9 +1,8 @@
 package payment
 
 import (
-	"payment/internal/service"
-
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
+	"payment/internal/service"
 )
 
 type api struct {

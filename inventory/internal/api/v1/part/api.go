@@ -1,9 +1,8 @@
 package part
 
 import (
-	"inventory/internal/service"
-
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	"inventory/internal/service"
 )
 
 type api struct {

@@ -13,6 +13,10 @@ import (
 var partsNotFound = "one or more parts not found"
 
 func (s *service) CreateOrder(ctx context.Context, userUUID string, partUuids []string) (string, float64, error) {
+	if len(partUuids) == 0 {
+		return "", 0, fmt.Errorf("%s: empty parts list", partsNotFound)
+	}
+
 	parts, err := s.inventoryClient.ListParts(
 		ctx,
 		model.PartsFilter{
@@ -20,11 +24,11 @@ func (s *service) CreateOrder(ctx context.Context, userUUID string, partUuids []
 		},
 	)
 	if err != nil {
-		partNotFound := &inventoryV1.PartsNotFoundError{}
-		if errors.As(err, &partNotFound) {
+		notFound := &inventoryV1.PartsNotFoundError{}
+		if errors.As(err, &notFound) {
 			return "", 0, fmt.Errorf("%s: %w", partsNotFound, err)
 		}
-		return "", 0, fmt.Errorf("failed to list parts from inventory service: %w", err)
+		return "", 0, err
 	}
 
 	if len(parts) != len(partUuids) {

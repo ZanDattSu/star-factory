@@ -3,9 +3,8 @@ package part
 import (
 	"context"
 
-	"inventory/internal/converter"
-
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	"inventory/internal/converter"
 )
 
 func (a *api) ListParts(ctx context.Context, req *inventoryV1.ListPartsRequest) (*inventoryV1.ListPartsResponse, error) {

@@ -10,16 +10,17 @@ import (
 	"syscall"
 	"time"
 
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
+	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 	"github.com/go-faster/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	ordApi "order/internal/api/v1/order"
+	inventoryService "order/internal/client/grpc/inventory/v1"
+	paymentService "order/internal/client/grpc/payment/v1"
 	ordRepo "order/internal/repository/order"
 	httpServer "order/internal/server"
 	ordService "order/internal/service/order"
-
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
-	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (
@@ -84,7 +85,11 @@ func main() {
 
 	logger.Info("Creating order API handler...")
 	orderStorage := ordRepo.NewRepository()
-	orderService := ordService.NewService(orderStorage, paymentClient, inventoryClient)
+	orderService := ordService.NewService(
+		orderStorage,
+		paymentService.NewClient(paymentClient),
+		inventoryService.NewClient(inventoryClient),
+	)
 	api := ordApi.NewApi(orderService)
 
 	logger.Info("Creating HTTP server...")

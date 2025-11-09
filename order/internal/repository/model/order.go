@@ -9,3 +9,22 @@ type Order struct {
 	PaymentMethod   PaymentMethod `json:"payment_method"`
 	Status          OrderStatus   `json:"status"`
 }
+
+type OrderStatus string
+
+const (
+	OrderStatusUnspecified    OrderStatus = "UNSPECIFIED"
+	OrderStatusPendingPayment OrderStatus = "PENDING_PAYMENT"
+	OrderStatusPaid           OrderStatus = "PAID"
+	OrderStatusCancelled      OrderStatus = "CANCELLED"
+)
+
+type PaymentMethod string
+
+const (
+	PaymentMethodUnspecified   PaymentMethod = "UNSPECIFIED"
+	PaymentMethodCard          PaymentMethod = "CARD"
+	PaymentMethodSbp           PaymentMethod = "SBP"
+	PaymentMethodCreditCard    PaymentMethod = "CREDIT_CARD"
+	PaymentMethodInvestorMoney PaymentMethod = "INVESTOR_MONEY"
+)

@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-
-	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 
 const (

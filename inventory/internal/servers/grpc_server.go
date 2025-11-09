@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"net"
 
+	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"shared/pkg/interceptor"
-
-	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
 type GRPCServer struct {

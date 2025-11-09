@@ -1,4 +1,4 @@
-name: Lint Reusable
+name: Run Unit Tests
 
 on:
   workflow_call:
@@ -9,13 +9,10 @@ on:
       go-version:
         required: true
         type: string
-      golangci-lint-version:
-        required: true
-        type: string
 
 jobs:
-  golangci-lint:
-    name: Lint all Go modules
+  test:
+    name: Run go test
     runs-on: ubuntu-latest
 
     steps:
@@ -26,15 +23,12 @@ jobs:
         uses: actions/setup-go@v5.4.0
         with:
           go-version: ${{ inputs.go-version }}
+          cache: false # отключаем кэш go.sum в корне
 
-      - name: 🐾 Show go.work (debug)
-        run: cat go.work || echo "❗ go.work not found"
-
-      - name: 📌 Install Task
+      - name: Install Task
         uses: arduino/setup-task@v2.0.0
 
-      - name: ✅ Run golangci-lint via Taskfile
+      - name: Run unit tests via Taskfile
         env:
           MODULES: ${{ inputs.modules }}
-          GOLANGCI_LINT_VERSION: ${{ inputs.golangci-lint-version }}
-        run: task lint
+        run: task test

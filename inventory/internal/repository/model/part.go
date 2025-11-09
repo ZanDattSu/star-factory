@@ -30,6 +30,16 @@ type Manufacturer struct {
 	Website string `json:"website"`
 }
 
+type Category string
+
+const (
+	CategoryUnspecified Category = "UNSPECIFIED"
+	CategoryEngine      Category = "ENGINE"
+	CategoryFuel        Category = "FUEL"
+	CategoryPorthole    Category = "PORTHOLE"
+	CategoryWing        Category = "WING"
+)
+
 type PartsFilter struct {
 	Uuids                 []string   `json:"uuids"`
 	Names                 []string   `json:"names"`

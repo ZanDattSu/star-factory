@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"order/internal/model"
-
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	"order/internal/model"
 )
 
 func (a *api) CancelOrder(ctx context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error) {

@@ -1,35 +1,38 @@
-with-expecter: true # Включает поддержку Expecter для моков (проверка вызовов методов).
+with-expecter: true
 dir: "{{.InterfaceDir}}/mocks"
-filename: "mock_{{.InterfaceNameSnake}}.go" # Имя файла в формате snake_case.
+filename: "mock_{{.InterfaceNameSnake}}.go"
 outpkg: "mocks"
 mockname: "{{.InterfaceName}}"
-resolve-type-alias: False # Отключает разрешение алиасов типов.
+resolve-type-alias: False
 issue-845-fix: True
 
 packages:
-  # services
-  github.com/ZanDattSu/star-factory/inventory/internal/service:
+  # Inventory service
+  inventory/internal/service:
     config:
-      include-regex: ".*Service"  # Включает только интерфейсы, содержащие 'Service' в названии
+      all: true
 
-  github.com/ZanDattSu/star-factory/order/internal/service:
+  # Inventory repository
+  inventory/internal/repository:
     config:
-      include-regex: ".*Service"
+      all: true
 
-  github.com/ZanDattSu/star-factory/payment/internal/service:
+  # Inventory and Payment clients
+  order/internal/client/grpc:
     config:
-      include-regex: ".*Service"
+      all: true
 
-  # repository
-  github.com/ZanDattSu/star-factory/inventory/internal/repository:
+  # Order service
+  order/internal/service:
     config:
-      include-regex: ".*Repository"  # Включает только интерфейсы, содержащие 'Repository' в названии
+      all: true
 
-  github.com/ZanDattSu/star-factory/order/internal/repository:
+  # Order repository
+  order/internal/repository:
     config:
-      include-regex: ".*Repository"
+      all: true
 
-#  У payment нет репозитория, если в будущем появится раскомменитить
-#  github.com/ZanDattSu/star-factory/payment/internal/repository:
-#    config:
-#      include-regex: ".*Repository"
+  # Payment service
+  payment/internal/service:
+    config:
+      all: true

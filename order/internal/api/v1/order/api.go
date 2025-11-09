@@ -4,9 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"order/internal/service"
-
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	"order/internal/service"
 )
 
 type api struct {

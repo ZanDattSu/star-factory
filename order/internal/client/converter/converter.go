@@ -1,11 +1,10 @@
 package converter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"order/internal/model"
-
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"order/internal/model"
 )
 
 // === PaymentMethod ===
