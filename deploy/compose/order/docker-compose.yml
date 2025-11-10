@@ -1,0 +1,44 @@
+services: # Раздел, описывающий контейнеры, которые требуются для работы Order-сервиса
+
+  postgres-order: # Контейнер с PostgreSQL, используемый для хранения данных заказов
+    image: postgres:17.0-alpine3.20
+
+    container_name: postgres-order
+
+    environment:
+      POSTGRES_DB: order-service
+      POSTGRES_USER: order-service-user
+      POSTGRES_PASSWORD: order-service-password
+
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+      # Определяем том, который будет использоваться для хранения данных PostgreSQL
+      # Он сохраняет данные между перезапусками контейнера
+
+    ports:
+      - "5432:5432"
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U order-service-user -d order-service" ]
+      # Настраиваем проверку готовности контейнера — pg_isready проверяет, принимает ли база подключения
+      interval: 10s  # Интервал между проверками — каждые 10 секунд
+      timeout: 5s    # Время ожидания ответа от проверки
+      retries: 5     # После 5 неудачных попыток подряд контейнер считается "unhealthy"
+
+    restart: unless-stopped
+    # Автоматически перезапускаем контейнер, если он аварийно завершился
+    # Если контейнер был остановлен вручную — не перезапускаем
+
+    networks:
+      - microservices-net
+      # Подключаемся к общей сети, чтобы другие микросервисы (например, Order-сервис) могли найти этот контейнер по имени "postgres-order"
+
+volumes: # Раздел с томами — определяем, какие дисковые ресурсы создаёт и использует Docker
+  postgres_order_data:
+  # Именованный том для хранения данных Order-сервиса в PostgreSQL
+  # Позволяет сохранять состояние базы даже после перезапуска контейнера
+
+networks:
+  microservices-net:
+    external: true
+    # Подключаемся к уже существующей общей сети "microservices-net"
