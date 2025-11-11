@@ -1,4 +1,4 @@
-package order
+package inmemory
 
 import (
 	"context"
@@ -7,8 +7,9 @@ import (
 	"order/internal/repository/converter"
 )
 
-func (r *repository) PutOrder(_ context.Context, uuid string, order *model.Order) {
+func (r *repository) UpdateOrder(_ context.Context, uuid string, order *model.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.orders[uuid] = converter.OrderToRepoModel(order)
+	return nil
 }

@@ -23,7 +23,7 @@ func (_m *OrderRepository) EXPECT() *OrderRepository_Expecter {
 }
 
 // GetOrder provides a mock function with given fields: ctx, uuid
-func (_m *OrderRepository) GetOrder(ctx context.Context, uuid string) (*model.Order, bool) {
+func (_m *OrderRepository) GetOrder(ctx context.Context, uuid string) (*model.Order, error) {
 	ret := _m.Called(ctx, uuid)
 
 	if len(ret) == 0 {
@@ -31,8 +31,8 @@ func (_m *OrderRepository) GetOrder(ctx context.Context, uuid string) (*model.Or
 	}
 
 	var r0 *model.Order
-	var r1 bool
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*model.Order, bool)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*model.Order, error)); ok {
 		return rf(ctx, uuid)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) *model.Order); ok {
@@ -43,10 +43,10 @@ func (_m *OrderRepository) GetOrder(ctx context.Context, uuid string) (*model.Or
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) bool); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, uuid)
 	} else {
-		r1 = ret.Get(1).(bool)
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1
@@ -71,19 +71,32 @@ func (_c *OrderRepository_GetOrder_Call) Run(run func(ctx context.Context, uuid 
 	return _c
 }
 
-func (_c *OrderRepository_GetOrder_Call) Return(_a0 *model.Order, _a1 bool) *OrderRepository_GetOrder_Call {
+func (_c *OrderRepository_GetOrder_Call) Return(_a0 *model.Order, _a1 error) *OrderRepository_GetOrder_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *OrderRepository_GetOrder_Call) RunAndReturn(run func(context.Context, string) (*model.Order, bool)) *OrderRepository_GetOrder_Call {
+func (_c *OrderRepository_GetOrder_Call) RunAndReturn(run func(context.Context, string) (*model.Order, error)) *OrderRepository_GetOrder_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // PutOrder provides a mock function with given fields: ctx, uuid, order
-func (_m *OrderRepository) PutOrder(ctx context.Context, uuid string, order *model.Order) {
-	_m.Called(ctx, uuid, order)
+func (_m *OrderRepository) PutOrder(ctx context.Context, uuid string, order *model.Order) error {
+	ret := _m.Called(ctx, uuid, order)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PutOrder")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *model.Order) error); ok {
+		r0 = rf(ctx, uuid, order)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // OrderRepository_PutOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PutOrder'
@@ -106,13 +119,61 @@ func (_c *OrderRepository_PutOrder_Call) Run(run func(ctx context.Context, uuid 
 	return _c
 }
 
-func (_c *OrderRepository_PutOrder_Call) Return() *OrderRepository_PutOrder_Call {
-	_c.Call.Return()
+func (_c *OrderRepository_PutOrder_Call) Return(_a0 error) *OrderRepository_PutOrder_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *OrderRepository_PutOrder_Call) RunAndReturn(run func(context.Context, string, *model.Order)) *OrderRepository_PutOrder_Call {
-	_c.Run(run)
+func (_c *OrderRepository_PutOrder_Call) RunAndReturn(run func(context.Context, string, *model.Order) error) *OrderRepository_PutOrder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateOrder provides a mock function with given fields: ctx, uuid, order
+func (_m *OrderRepository) UpdateOrder(ctx context.Context, uuid string, order *model.Order) error {
+	ret := _m.Called(ctx, uuid, order)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateOrder")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, *model.Order) error); ok {
+		r0 = rf(ctx, uuid, order)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// OrderRepository_UpdateOrder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateOrder'
+type OrderRepository_UpdateOrder_Call struct {
+	*mock.Call
+}
+
+// UpdateOrder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uuid string
+//   - order *model.Order
+func (_e *OrderRepository_Expecter) UpdateOrder(ctx interface{}, uuid interface{}, order interface{}) *OrderRepository_UpdateOrder_Call {
+	return &OrderRepository_UpdateOrder_Call{Call: _e.mock.On("UpdateOrder", ctx, uuid, order)}
+}
+
+func (_c *OrderRepository_UpdateOrder_Call) Run(run func(ctx context.Context, uuid string, order *model.Order)) *OrderRepository_UpdateOrder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(*model.Order))
+	})
+	return _c
+}
+
+func (_c *OrderRepository_UpdateOrder_Call) Return(_a0 error) *OrderRepository_UpdateOrder_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *OrderRepository_UpdateOrder_Call) RunAndReturn(run func(context.Context, string, *model.Order) error) *OrderRepository_UpdateOrder_Call {
+	_c.Call.Return(run)
 	return _c
 }
 

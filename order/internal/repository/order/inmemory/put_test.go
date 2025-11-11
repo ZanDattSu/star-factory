@@ -1,4 +1,4 @@
-package order
+package inmemory
 
 import "order/internal/model"
 
@@ -17,16 +17,19 @@ func (s *SuiteRepository) TestPutOrderOverridesExisting() {
 		Status:        model.OrderStatusPaid,
 	}
 
-	s.repo.PutOrder(s.ctx, order1.OrderUUID, order1)
-	got1, ok1 := s.repo.GetOrder(s.ctx, order1.OrderUUID)
-	s.Require().True(ok1)
+	err := s.repo.PutOrder(s.ctx, order1.OrderUUID, order1)
+	if err != nil {
+		return
+	}
+	got1, err1 := s.repo.GetOrder(s.ctx, order1.OrderUUID)
+	s.Require().NoError(err1)
 	s.Equal("user-1", got1.UserUUID)
 	s.Equal(model.OrderStatusPendingPayment, got1.Status)
 
-	s.repo.PutOrder(s.ctx, order2.OrderUUID, order2)
-	got2, ok2 := s.repo.GetOrder(s.ctx, order2.OrderUUID)
+	_ = s.repo.PutOrder(s.ctx, order2.OrderUUID, order2)
+	got2, err2 := s.repo.GetOrder(s.ctx, order2.OrderUUID)
 
-	s.Require().True(ok2)
+	s.Require().NoError(err2)
 	s.Equal("user-2", got2.UserUUID)
 	s.Equal(model.OrderStatusPaid, got2.Status)
 }
@@ -41,7 +44,7 @@ func (s *SuiteRepository) TestConcurrentAccess() {
 	done := make(chan struct{})
 	go func() {
 		for i := 0; i < 100; i++ {
-			s.repo.PutOrder(s.ctx, order.OrderUUID, order)
+			_ = s.repo.PutOrder(s.ctx, order.OrderUUID, order)
 		}
 		close(done)
 	}()

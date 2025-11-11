@@ -2,20 +2,24 @@ package order
 
 import (
 	"context"
+	"fmt"
 
 	"order/internal/model"
 )
 
 func (s *service) CancelOrder(ctx context.Context, orderUUID string) error {
-	order, ok := s.repository.GetOrder(ctx, orderUUID)
-	if !ok {
+	order, err := s.repository.GetOrder(ctx, orderUUID)
+	if err != nil {
 		return model.NewOrderNotFoundError(orderUUID)
 	}
 
 	switch order.Status {
 	case model.OrderStatusPendingPayment:
 		order.Status = model.OrderStatusCancelled
-		s.repository.PutOrder(ctx, order.OrderUUID, order)
+		err = s.repository.UpdateOrder(ctx, order.OrderUUID, order)
+		if err != nil {
+			return fmt.Errorf("failed to put order in repository: %w", err)
+		}
 		return nil
 	case model.OrderStatusPaid:
 		return model.NewConflictError("cannot cancel a paid order")
