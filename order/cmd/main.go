@@ -11,12 +11,16 @@ import (
 	"time"
 
 	"github.com/go-faster/errors"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	ordApi "order/internal/api/v1/order"
 	inventoryService "order/internal/client/grpc/inventory/v1"
 	paymentService "order/internal/client/grpc/payment/v1"
-	ordRepo "order/internal/repository/order"
+	"order/internal/migrator"
+	ordRepo "order/internal/repository/order/postgresql"
 	httpServer "order/internal/server"
 	ordService "order/internal/service/order"
 
@@ -32,27 +36,52 @@ const (
 	shutdownTimeout = 10 * time.Second
 )
 
-func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
-	conn, err := grpc.NewClient(
-		getAddress(port),
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
-	)
-	return conn, err
-}
-
-func getAddress(port string) string {
-	return net.JoinHostPort("localhost", port)
-}
-
 func main() {
+	ctx := context.Background()
+
 	logger := setupLogger()
 
-	logger.Info("Creating payment gRPC client...")
+	err := godotenv.Load(".env")
+	if err != nil {
+		logger.Error("Failed to load .env file", slogErr(err))
+		return
+	}
 
+	dbURI := os.Getenv("DB_URI")
+	if dbURI == "" {
+		logger.Error("Error: environment variable DB_URI is not set")
+		return
+	}
+
+	pool, err := pgxpool.New(ctx, dbURI)
+	if err != nil {
+		logger.Error("Failed to create pgxpool connect", slogErr(err))
+		return
+	}
+
+	defer func() {
+		pool.Close()
+	}()
+
+	err = pool.Ping(ctx)
+	if err != nil {
+		logger.Error("Database is unavailable", slogErr(err))
+		return
+	}
+
+	migratorDir := os.Getenv("MIGRATIONS_DIR")
+	migratorRunner := migrator.NewMigrator(stdlib.OpenDB(*pool.Config().ConnConfig), migratorDir)
+
+	err = migratorRunner.Up()
+	if err != nil {
+		logger.Error("Database migration error", slogErr(err))
+		return
+	}
+
+	logger.Info("Creating payment gRPC client...")
 	paymentConn, err := newGRPCConnectWithoutSecure(paymentServicePort)
 	if err != nil {
 		logger.Error("Failed to connect to payment gRPC service", slog.String("port", paymentServicePort), slogErr(err))
-		// logger.Error("Failed to connect to payment gRPC service (%s): %v", inventoryServicePort, err)
 		return
 	}
 	defer func() {
@@ -60,14 +89,12 @@ func main() {
 			logger.Warn("Failed to close payment gRPC connection", slogErr(closeErr))
 		}
 	}()
-
 	paymentClient := paymentV1.NewPaymentServiceClient(paymentConn)
 	logger.Info("Payment gRPC client created successfully", slog.String("port", paymentServicePort))
 
 	logger.Info("======================================")
 
 	logger.Info("Creating inventory gRPC client...")
-
 	inventoryConn, err := newGRPCConnectWithoutSecure(inventoryServicePort)
 	if err != nil {
 		logger.Error("Failed to connect to inventory gRPC service", slog.String("port", inventoryServicePort), slogErr(err))
@@ -78,23 +105,22 @@ func main() {
 			logger.Warn("Failed to close inventory gRPC connection", slogErr(closeErr))
 		}
 	}()
-
 	inventoryClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
 	logger.Info("Inventory gRPC client created successfully", slog.String("port", inventoryServicePort))
 
 	logger.Info("======================================")
 
 	logger.Info("Creating order API handler...")
-	orderStorage := ordRepo.NewRepository()
+	orderRepository := ordRepo.NewRepository(pool)
 	orderService := ordService.NewService(
-		orderStorage,
+		orderRepository,
 		paymentService.NewClient(paymentClient),
 		inventoryService.NewClient(inventoryClient),
 	)
-	api := ordApi.NewApi(orderService)
+	orderApi := ordApi.NewApi(orderService)
 
 	logger.Info("Creating HTTP server...")
-	server, err := httpServer.NewHTTPServer(orderServicePort, api)
+	server, err := httpServer.NewHTTPServer(orderServicePort, orderApi)
 	if err != nil {
 		logger.Error("Failed to create HTTP server", slogErr(err))
 		return
@@ -113,7 +139,7 @@ func main() {
 
 	logger.Info("Shutting down server...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(ctx, shutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
@@ -122,6 +148,18 @@ func main() {
 	}
 
 	logger.Info("HTTP server stopped successfully")
+}
+
+func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
+	conn, err := grpc.NewClient(
+		getAddress(port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
+	)
+	return conn, err
+}
+
+func getAddress(port string) string {
+	return net.JoinHostPort("localhost", port)
 }
 
 func slogErr(err error) slog.Attr {

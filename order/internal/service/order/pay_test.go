@@ -23,9 +23,9 @@ func (s *SuiteService) TestPayOrderSuccess() {
 	expectedTransactionUUID := gofakeit.UUID()
 
 	s.orderRepository.On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).Once()
+		Return(order, nil).Once()
 
-	s.orderRepository.On("PutOrder",
+	s.orderRepository.On("UpdateOrder",
 		s.ctx,
 		order.OrderUUID,
 		mock.MatchedBy(func(o *model.Order) bool {
@@ -37,7 +37,7 @@ func (s *SuiteService) TestPayOrderSuccess() {
 				o.UserUUID == order.UserUUID &&
 				slices.Equal(o.PartUuids, order.PartUuids)
 		}),
-	).Once()
+	).Return(nil).Once()
 
 	s.paymentClient.On("PayOrder", s.ctx, order.OrderUUID, order.UserUUID, paymentMethod).
 		Return(expectedTransactionUUID, nil).Once()
@@ -54,7 +54,7 @@ func (s *SuiteService) TestPayOrderOrderNotFound() {
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, orderUUID).
-		Return((*model.Order)(nil), false).
+		Return((*model.Order)(nil), &model.OrderNotFoundError{}).
 		Once()
 
 	transactionUUID, err := s.service.PayOrder(s.ctx, paymentMethod, orderUUID)
@@ -84,7 +84,7 @@ func (s *SuiteService) TestPayOrderPaymentFailed() {
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).Once()
+		Return(order, nil).Once()
 
 	s.paymentClient.
 		On("PayOrder", s.ctx, order.OrderUUID, order.UserUUID, paymentMethod).
@@ -113,7 +113,7 @@ func (s *SuiteService) TestPayOrderPaymentFailedNoMutation() {
 	paymentMethod := RandomPaymentMethod()
 
 	s.orderRepository.On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).Once()
+		Return(order, nil).Once()
 
 	s.paymentClient.On("PayOrder", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return("", errors.New("failed")).Once()

@@ -8,10 +8,10 @@ import (
 // Value универсальное значение для метаданных
 // Только одно из полей должно быть установлено (не nil)
 type Value struct {
-	StringValue *string  `json:"string_value,omitempty"`
-	Int64Value  *int64   `json:"int64_value,omitempty"`
-	DoubleValue *float64 `json:"double_value,omitempty"`
-	BoolValue   *bool    `json:"bool_value,omitempty"`
+	StringValue *string  `json:"string_value,omitempty" bson:"string_value, omitempty"`
+	Int64Value  *int64   `json:"int64_value,omitempty" bson:"int_64_value, omitempty"`
+	DoubleValue *float64 `json:"double_value,omitempty" bson:"double_value, omitempty"`
+	BoolValue   *bool    `json:"bool_value,omitempty" bson:"bool_value, omitempty"`
 }
 
 // Конструкторы

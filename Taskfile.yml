@@ -293,17 +293,6 @@ tasks:
           GOBIN={{.BIN_DIR}} go install github.com/mikefarah/yq/v4@{{.YQ_VERSION}}
         }
 
-  grpcurl:install:
-    desc: "Устанавливает grpcurl в каталог bin"
-    cmds:
-      - |
-        [ -f {{.GRPCURL}} ] || {
-          echo 'Устанавливаем grpcurl {{.GRPCURL_VERSION}}...'
-          GOBIN={{.BIN_DIR}} go install github.com/fullstorydev/grpcurl/cmd/grpcurl@{{.GRPCURL_VERSION}}
-        }
-    status:
-      - test -x {{.GRPCURL}}
-
   mockery:install:
     desc: "Устанавливает mockery в ./bin"
     cmds:
@@ -467,6 +456,17 @@ tasks:
       - task down-core
       - task down-inventory
       - task down-order
+
+  grpcurl:install:
+    desc: "Устанавливает grpcurl в каталог bin"
+    cmds:
+      - |
+        [ -f {{.GRPCURL}} ] || {
+          echo 'Устанавливаем grpcurl {{.GRPCURL_VERSION}}...'
+          GOBIN={{.BIN_DIR}} go install github.com/fullstorydev/grpcurl/cmd/grpcurl@{{.GRPCURL_VERSION}}
+        }
+    status:
+      - test -x {{.GRPCURL}}
 
   test-api:
     desc: "Запуск тестов для проверки API микросервисов"

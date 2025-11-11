@@ -7,23 +7,24 @@ import (
 
 // === Part ===
 
-func PartToRepoModel(part *model.Part) *repoModel.Part {
-	if part == nil {
+func PartToRepoModel(p *model.Part) *repoModel.Part {
+	if p == nil {
 		return nil
 	}
+
 	return &repoModel.Part{
-		Uuid:          part.Uuid,
-		Name:          part.Name,
-		Description:   part.Description,
-		Price:         part.Price,
-		StockQuantity: part.StockQuantity,
-		Category:      repoModel.Category(part.Category),
-		Dimensions:    DimensionsToRepoModel(part.Dimensions),
-		Manufacturer:  ManufacturerToRepoModel(part.Manufacturer),
-		Tags:          part.Tags,
-		Metadata:      MetadataToRepoModel(part.Metadata),
-		CreatedAt:     part.CreatedAt,
-		UpdatedAt:     part.UpdatedAt,
+		Uuid:          p.Uuid,
+		Name:          p.Name,
+		Description:   p.Description,
+		Price:         p.Price,
+		StockQuantity: p.StockQuantity,
+		Category:      repoModel.Category(p.Category),
+		Dimensions:    DimensionsToRepoModel(p.Dimensions),
+		Manufacturer:  ManufacturerToRepoModel(p.Manufacturer),
+		Tags:          p.Tags,
+		Metadata:      MetadataToRepoModel(p.Metadata),
+		CreatedAt:     p.CreatedAt,
+		UpdatedAt:     p.UpdatedAt,
 	}
 }
 
@@ -31,6 +32,7 @@ func PartToModel(p *repoModel.Part) *model.Part {
 	if p == nil {
 		return nil
 	}
+
 	return &model.Part{
 		Uuid:          p.Uuid,
 		Name:          p.Name,
@@ -51,8 +53,7 @@ func PartToModel(p *repoModel.Part) *model.Part {
 func PartsToModel(repoParts []*repoModel.Part) []*model.Part {
 	out := make([]*model.Part, 0, len(repoParts))
 	for _, p := range repoParts {
-		part := PartToModel(p)
-		out = append(out, part)
+		out = append(out, PartToModel(p))
 	}
 	return out
 }
@@ -61,8 +62,11 @@ func PartsToModel(repoParts []*repoModel.Part) []*model.Part {
 func PartsToRepoModel(parts []*model.Part) []*repoModel.Part {
 	out := make([]*repoModel.Part, 0, len(parts))
 	for _, p := range parts {
-		part := PartToRepoModel(p)
-		out = append(out, part)
+		if p == nil {
+			out = append(out, nil)
+			continue
+		}
+		out = append(out, PartToRepoModel(p))
 	}
 	return out
 }
@@ -123,7 +127,7 @@ func PartsFilterToRepoModel(f model.PartsFilter) repoModel.PartsFilter {
 	return repoModel.PartsFilter{
 		Uuids:                 f.Uuids,
 		Names:                 f.Names,
-		Categories:            categoriesToRepo(f.Categories),
+		Categories:            CategoriesToRepo(f.Categories),
 		ManufacturerCountries: f.ManufacturerCountries,
 		Tags:                  f.Tags,
 	}
@@ -133,11 +137,13 @@ func PartsFilterToModel(f repoModel.PartsFilter) model.PartsFilter {
 	return model.PartsFilter{
 		Uuids:                 f.Uuids,
 		Names:                 f.Names,
-		Categories:            categoriesFromRepo(f.Categories),
+		Categories:            CategoriesFromRepo(f.Categories),
 		ManufacturerCountries: f.ManufacturerCountries,
 		Tags:                  f.Tags,
 	}
 }
+
+// === Metadata ===
 
 // MetadataToRepoModel конвертирует map[string]*model.Value → map[string]*repoModel.Value.
 func MetadataToRepoModel(metadata map[string]*model.Value) map[string]*repoModel.Value {
@@ -191,9 +197,9 @@ func MetadataToModel(metadata map[string]*repoModel.Value) map[string]*model.Val
 	return result
 }
 
-// === Вспомогательные функции ===
+// === Categories ===
 
-func categoriesFromRepo(cats []repoModel.Category) []model.Category {
+func CategoriesFromRepo(cats []repoModel.Category) []model.Category {
 	out := make([]model.Category, len(cats))
 	for i, c := range cats {
 		out[i] = model.Category(c)
@@ -201,7 +207,7 @@ func categoriesFromRepo(cats []repoModel.Category) []model.Category {
 	return out
 }
 
-func categoriesToRepo(cats []model.Category) []repoModel.Category {
+func CategoriesToRepo(cats []model.Category) []repoModel.Category {
 	out := make([]repoModel.Category, len(cats))
 	for i, c := range cats {
 		out[i] = repoModel.Category(c)

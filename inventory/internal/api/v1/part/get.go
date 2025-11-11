@@ -19,7 +19,7 @@ func (a *api) GetPart(ctx context.Context, req *inventoryV1.GetPartRequest) (*in
 		if errors.As(err, &errNotFound) {
 			return nil, status.Error(codes.NotFound, errNotFound.Error())
 		}
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &inventoryV1.GetPartResponse{

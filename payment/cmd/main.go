@@ -30,14 +30,14 @@ func main() {
 
 	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
-		logger.Error("failed to create gRPC server", slogErr(err))
+		logger.Error("Failed to create gRPC server", slogErr(err))
 		return
 	}
 
 	go func() {
-		logger.Info("gRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
+		logger.Info("GRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
 		if err := gRPCServer.Serve(); err != nil {
-			logger.Error("gRPC server failed", slogErr(err))
+			logger.Error("GRPC server failed", slogErr(err))
 			return
 		}
 	}()
@@ -47,7 +47,7 @@ func main() {
 
 	gatewayServer, err := servers.NewHTTPServer(ctx, httpPort, grpcPort)
 	if err != nil {
-		logger.Error("failed to create HTTP server", slogErr(err))
+		logger.Error("Failed to create HTTP server", slogErr(err))
 		return
 	}
 
@@ -55,7 +55,7 @@ func main() {
 	go func() {
 		logger.Info("HTTP server with gRPC-Gateway listening on", slog.Int("port", gatewayServer.GetPort()))
 		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Error("failed to serve HTTP", slogErr(err))
+			logger.Error("Failed to serve HTTP", slogErr(err))
 			return
 		}
 	}()
@@ -70,14 +70,14 @@ func main() {
 
 	// Сначала останавливаем HTTP сервер
 	logger.Info("Shutting down HTTP server...")
-	if err := gatewayServer.Shutdown(shutdownCtx); err != nil {
+	if err = gatewayServer.Shutdown(shutdownCtx); err != nil {
 		logger.Error("HTTP shutdown error", slogErr(err))
 	}
 	logger.Info("HTTP server stopped")
 
 	logger.Info("Shutting down gRPC server...")
 	gRPCServer.Shutdown()
-	logger.Info("gRPC server stopped")
+	logger.Info("GRPC server stopped")
 }
 
 func slogErr(err error) slog.Attr {

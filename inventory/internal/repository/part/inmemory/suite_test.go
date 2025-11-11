@@ -1,4 +1,4 @@
-package order
+package inmemory
 
 import (
 	"context"
@@ -19,7 +19,6 @@ func (s *SuiteRepository) SetupTest() {
 }
 
 func (s *SuiteRepository) TearDownTest() {
-	s.repo = nil
 }
 
 func TestRepositorySuite(t *testing.T) {

@@ -40,6 +40,7 @@ func (s *SuiteService) TestCreateOrderSuccess() {
 				order.TotalPrice == expectedTotalPrice &&
 				order.Status == model.OrderStatusPendingPayment
 		})).
+		Return(nil).
 		Once()
 
 	orderUUID, totalPrice, err := s.service.CreateOrder(s.ctx, userUUID, partUuids)

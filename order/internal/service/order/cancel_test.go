@@ -13,16 +13,16 @@ func (s *SuiteService) TestCancelOrderSuccess() {
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).Once()
+		Return(order, nil).Once()
 
 	s.orderRepository.
-		On("PutOrder",
+		On("UpdateOrder",
 			s.ctx,
 			order.OrderUUID,
 			mock.MatchedBy(func(o *model.Order) bool {
 				return o.Status == model.OrderStatusCancelled
 			}),
-		).Once()
+		).Return(nil).Once()
 
 	err := s.service.CancelOrder(s.ctx, order.OrderUUID)
 	s.Require().NoError(err)
@@ -33,7 +33,7 @@ func (s *SuiteService) TestCancelOrderNotFound() {
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
-		Return(nil, false).
+		Return(nil, &model.OrderNotFoundError{}).
 		Once()
 
 	err := s.service.CancelOrder(s.ctx, order.OrderUUID)
@@ -53,7 +53,7 @@ func (s *SuiteService) TestCancelOrderConflictPaid() {
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).
+		Return(order, nil).
 		Once()
 
 	err := s.service.CancelOrder(s.ctx, order.OrderUUID)
@@ -66,13 +66,13 @@ func (s *SuiteService) TestCancelOrderConflictPaid() {
 	s.Require().Contains(conflict.Error(), "cannot cancel a paid order")
 }
 
-func (s *SuiteService) TestCancelOrder_ConflictAlreadyCancelled() {
+func (s *SuiteService) TestCancelOrderConflictAlreadyCancelled() {
 	order := RandomOrder()
 	order.Status = model.OrderStatusCancelled
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
-		Return(order, true).
+		Return(order, nil).
 		Once()
 
 	err := s.service.CancelOrder(s.ctx, order.OrderUUID)

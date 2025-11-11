@@ -1,13 +1,6 @@
-package part
+package inmemory
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-	repoModel "inventory/internal/repository/model"
-)
-
-func (r *repository) InitTestData() {
+/*func (r *repository) InitTestData() {
 	parts := []*repoModel.Part{
 		{
 			Uuid:          uuid.NewString(),
@@ -130,3 +123,4 @@ func (r *repository) InitTestData() {
 		r.parts[part.Uuid] = part
 	}
 }
+*/

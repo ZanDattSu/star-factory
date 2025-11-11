@@ -10,8 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	partV1Api "inventory/internal/api/v1/part"
-	partRepo "inventory/internal/repository/part"
+	partRepo "inventory/internal/repository/part/mongodb"
 	"inventory/internal/servers"
 	partService "inventory/internal/service/part"
 )
@@ -24,9 +28,44 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
 	logger := setupLogger()
 
-	repo := partRepo.NewRepository()
+	err := godotenv.Load(".env")
+	if err != nil {
+		logger.Error("Failed to load .env file", slogErr(err))
+		return
+	}
+
+	dbURI := os.Getenv("MONGO_URI")
+	if dbURI == "" {
+		logger.Error("Error: environment variable MONGO_URI is not set")
+		return
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbURI))
+	if err != nil {
+		logger.Error("Failed to create MongoDB connect", slogErr(err))
+		return
+	}
+
+	defer func() {
+		if cerr := client.Disconnect(ctx); cerr != nil {
+			logger.Error("Error disconnecting from MongoDB", slogErr(cerr))
+		}
+	}()
+
+	err = client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		logger.Error("Failed to ping MongoDB", slogErr(err))
+		return
+	}
+
+	logger.Info("Connected to MongoDB")
+
+	partsCollection := client.Database("inventory")
+
+	repo := partRepo.NewRepository(partsCollection)
 	repo.InitTestData()
 
 	service := partService.NewService(repo)
@@ -34,25 +73,25 @@ func main() {
 
 	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
 	if err != nil {
-		logger.Error("failed to create gRPC server", slogErr(err))
+		logger.Error("Failed to create gRPC server", slogErr(err))
 		return
 	}
 
 	// Запускаем gRPC сервер
 	go func() {
-		logger.Info("gRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
+		logger.Info("GRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
 		if err := gRPCServer.Serve(); err != nil {
-			logger.Error("gRPC server failed", slogErr(err))
+			logger.Error("GRPC server failed", slogErr(err))
 			return
 		}
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	gatewayServer, err := servers.NewHTTPServer(ctx, httpPort, grpcPort)
 	if err != nil {
-		logger.Error("failed to create HTTP server", slogErr(err))
+		logger.Error("Failed to create HTTP server", slogErr(err))
 		return
 	}
 
@@ -60,7 +99,7 @@ func main() {
 	go func() {
 		logger.Info("HTTP server with gRPC-Gateway listening on", slog.Int("port", gatewayServer.GetPort()))
 		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Error("failed to serve HTTP", slogErr(err))
+			logger.Error("Failed to serve HTTP", slogErr(err))
 			return
 		}
 	}()
@@ -69,7 +108,7 @@ func main() {
 
 	logger.Info("Shutting down servers...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, shutdownTimeout)
 	defer shutdownCancel()
 
 	// Сначала останавливаем HTTP сервер
@@ -81,7 +120,7 @@ func main() {
 
 	logger.Info("Shutting down gRPC server...")
 	gRPCServer.Shutdown()
-	logger.Info("gRPC server stopped")
+	logger.Info("GRPC server stopped")
 }
 
 func slogErr(err error) slog.Attr {

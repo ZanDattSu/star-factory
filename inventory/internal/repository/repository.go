@@ -7,6 +7,7 @@ import (
 )
 
 type PartRepository interface {
-	GetPart(cxt context.Context, uuid string) (*model.Part, bool)
-	ListParts(ctx context.Context, req *model.PartsFilter) []*model.Part
+	GetPart(ctx context.Context, uuid string) (*model.Part, error)
+	PutPart(ctx context.Context, uuid string, part *model.Part) error
+	ListParts(ctx context.Context) ([]*model.Part, error)
 }

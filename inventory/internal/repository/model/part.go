@@ -1,33 +1,38 @@
 package model
 
-import "time"
+import (
+	"time"
 
+	_ "go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// Part - модель детали в MongoDB
 type Part struct {
-	Uuid          string            `json:"uuid"`
-	Name          string            `json:"name"`
-	Description   string            `json:"description"`
-	Price         float64           `json:"price"`
-	StockQuantity int64             `json:"stock_quantity"`
-	Category      Category          `json:"category"`
-	Dimensions    *Dimensions       `json:"dimensions"`
-	Manufacturer  *Manufacturer     `json:"manufacturer"`
-	Tags          []string          `json:"tags"`
-	Metadata      map[string]*Value `json:"metadata"`
-	CreatedAt     time.Time         `json:"created_at"`
-	UpdatedAt     time.Time         `json:"updated_at"`
+	Uuid          string            `json:"uuid" bson:"uuid"`
+	Name          string            `json:"name" bson:"name"`
+	Description   string            `json:"description" bson:"description"`
+	Price         float64           `json:"price" bson:"price"`
+	StockQuantity int64             `json:"stock_quantity" bson:"stock_quantity"`
+	Category      Category          `json:"category" bson:"category"`
+	Dimensions    *Dimensions       `json:"dimensions" bson:"dimensions, omitempty"`
+	Manufacturer  *Manufacturer     `json:"manufacturer" bson:"manufacturer, omitempty"`
+	Tags          []string          `json:"tags" bson:"tags"`
+	Metadata      map[string]*Value `json:"metadata" bson:"metadata, omitempty"`
+	CreatedAt     time.Time         `json:"created_at" bson:"created_at"`
+	UpdatedAt     time.Time         `json:"updated_at" bson:"updated_at"`
 }
 
 type Dimensions struct {
-	Length float64 `json:"length"`
-	Width  float64 `json:"width"`
-	Height float64 `json:"height"`
-	Weight float64 `json:"weight"`
+	Length float64 `json:"length" bson:"length"`
+	Width  float64 `json:"width" bson:"width"`
+	Height float64 `json:"height" bson:"height"`
+	Weight float64 `json:"weight" bson:"weight"`
 }
 
 type Manufacturer struct {
-	Name    string `json:"name"`
-	Country string `json:"country"`
-	Website string `json:"website"`
+	Name    string `json:"name" bson:"name"`
+	Country string `json:"country" bson:"country"`
+	Website string `json:"website" bson:"website"`
 }
 
 type Category string
@@ -41,9 +46,9 @@ const (
 )
 
 type PartsFilter struct {
-	Uuids                 []string   `json:"uuids"`
-	Names                 []string   `json:"names"`
-	Categories            []Category `json:"categories"`
-	ManufacturerCountries []string   `json:"manufacturer_countries"`
-	Tags                  []string   `json:"tags"`
+	Uuids                 []string   `json:"uuids" bson:"uuids"`
+	Names                 []string   `json:"names" bson:"names"`
+	Categories            []Category `json:"categories" bson:"categories"`
+	ManufacturerCountries []string   `json:"manufacturer_countries" bson:"manufacturer_countries"`
+	Tags                  []string   `json:"tags" bson:"tags"`
 }

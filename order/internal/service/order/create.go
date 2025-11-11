@@ -49,7 +49,10 @@ func (s *service) CreateOrder(ctx context.Context, userUUID string, partUuids []
 		Status:     model.OrderStatusPendingPayment,
 	}
 
-	s.repository.PutOrder(ctx, orderUUID, newOrder)
+	err = s.repository.PutOrder(ctx, orderUUID, newOrder)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to put order in repository: %w", err)
+	}
 
 	return orderUUID, totalPrice, nil
 }

@@ -1,4 +1,4 @@
-package order
+package inmemory
 
 import (
 	"github.com/samber/lo"
@@ -16,11 +16,11 @@ func (s *SuiteRepository) TestPutAndGetOrderSuccess() {
 		TransactionUUID: lo.ToPtr("txn-777"),
 	}
 
-	s.repo.PutOrder(s.ctx, order.OrderUUID, order)
+	_ = s.repo.PutOrder(s.ctx, order.OrderUUID, order)
 
-	got, ok := s.repo.GetOrder(s.ctx, order.OrderUUID)
+	got, err := s.repo.GetOrder(s.ctx, order.OrderUUID)
 
-	s.Require().True(ok, "ожидалось, что заказ будет найден")
+	s.Require().NoError(err, "ожидалось, что заказ будет найден")
 	s.Require().NotNil(got)
 
 	s.Equal(order.OrderUUID, got.OrderUUID)
@@ -34,6 +34,6 @@ func (s *SuiteRepository) TestPutAndGetOrderSuccess() {
 
 func (s *SuiteRepository) TestGetOrderNotFound() {
 	got, ok := s.repo.GetOrder(s.ctx, "nonexistent-order")
-	s.False(ok)
+	s.Error(ok)
 	s.Nil(got)
 }

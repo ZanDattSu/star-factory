@@ -1,18 +1,18 @@
-package part
+package inmemory
 
 import (
 	"sync"
 
-	repo "inventory/internal/repository"
-	repoModel "inventory/internal/repository/model"
+	repo "order/internal/repository"
+	repoModel "order/internal/repository/model"
 )
 
-// Компиляторная проверка: убеждаемся, что *repository реализует интерфейс PartRepository.
-var _ repo.PartRepository = (*repository)(nil)
+// Компиляторная проверка: убеждаемся, что *repository реализует интерфейс OrderRepository.
+var _ repo.OrderRepository = (*repository)(nil)
 
 type repository struct {
-	parts map[string]*repoModel.Part
-	mu    sync.RWMutex
+	orders map[string]*repoModel.Order
+	mu     sync.RWMutex
 }
 
 // NewRepository создаёт и возвращает указатель на repository.
@@ -20,6 +20,6 @@ type repository struct {
 // избежать потери методов и облегчает тестирование и расширение реализации.
 func NewRepository() *repository {
 	return &repository{
-		parts: make(map[string]*repoModel.Part),
+		orders: make(map[string]*repoModel.Order),
 	}
 }

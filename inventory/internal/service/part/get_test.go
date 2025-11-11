@@ -1,6 +1,7 @@
 package part
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -12,7 +13,7 @@ func (s *SuiteService) TestGetPartSuccess() {
 
 	s.partRepository.
 		On("GetPart", s.ctx, expectedPart.Uuid).
-		Return(expectedPart, true).
+		Return(expectedPart, nil).
 		Once()
 
 	part, err := s.service.GetPart(s.ctx, expectedPart.Uuid)
@@ -25,7 +26,7 @@ func (s *SuiteService) TestGetPartNotFound() {
 
 	s.partRepository.
 		On("GetPart", s.ctx, uuid).
-		Return((*model.Part)(nil), false).
+		Return((*model.Part)(nil), errors.New("not found")).
 		Once()
 
 	part, err := s.service.GetPart(s.ctx, uuid)
