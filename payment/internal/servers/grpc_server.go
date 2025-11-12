@@ -14,15 +14,15 @@ import (
 type GRPCServer struct {
 	server   *grpc.Server
 	listener net.Listener
-	port     int
+	port     string
 }
 
-func (s *GRPCServer) GetPort() int {
+func (s *GRPCServer) GetPort() string {
 	return s.port
 }
 
-func NewGRPCServer(grpcPort int, api paymentV1.PaymentServiceServer) (*GRPCServer, error) {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+func NewGRPCServer(grpcPort string, api paymentV1.PaymentServiceServer) (*GRPCServer, error) {
+	listener, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen: %w", err)
 	}

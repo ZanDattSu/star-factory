@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -22,14 +21,14 @@ const (
 
 type HTTPServer struct {
 	server *http.Server
-	port   int
+	port   string
 }
 
-func (s *HTTPServer) GetPort() int {
+func (s *HTTPServer) GetPort() string {
 	return s.port
 }
 
-func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, error) {
+func NewHTTPServer(ctx context.Context, httpPort, grpcPort string) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -98,6 +97,6 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 	return httpMux
 }
 
-func setEndpoint(port int) string {
-	return net.JoinHostPort("localhost", strconv.Itoa(port))
+func setEndpoint(port string) string {
+	return net.JoinHostPort("localhost", port)
 }

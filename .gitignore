@@ -18,7 +18,7 @@
 # vendor/
 
 # env file
-.env
+deploy/env/.env
 /.idea
 /.vscode
 /.cursor
@@ -28,3 +28,6 @@
 node_modules
 /shared/api/bundles/
 /coverage/
+/deploy/compose/order/.env
+/deploy/compose/inventory/.env
+/deploy/compose/payment/.env

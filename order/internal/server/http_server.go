@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"time"
 
@@ -43,7 +42,7 @@ func NewHTTPServer(port string, api orderV1.Handler) (*HTTPServer, error) {
 
 	// Создаем HTTP сервер
 	server := &http.Server{
-		Addr:              setEndpoint(port),
+		Addr:              port,
 		Handler:           r,
 		ReadHeaderTimeout: readHeaderTimeout, // Защита от Slowloris атак
 		// тип DDoS-атаки, при которой атакующий умышленно медленно отправляет HTTP-заголовки,
@@ -71,8 +70,4 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 
 func (s *HTTPServer) GetPort() string {
 	return s.port
-}
-
-func setEndpoint(port string) string {
-	return net.JoinHostPort("localhost", port)
 }

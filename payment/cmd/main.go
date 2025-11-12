@@ -8,34 +8,35 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"payment/internal/api/v1/payment"
+	"payment/internal/config"
 	"payment/internal/servers"
 	payService "payment/internal/service/payment"
 )
 
 const (
-	httpPort = 8082
-	grpcPort = 50052
-
-	shutdownTimeout = 10 * time.Second
+	configPath = "./deploy/compose/payment/.env"
 )
 
 func main() {
+	err := config.Load(configPath)
+	if err != nil {
+		panic("Error loading config: " + err.Error())
+	}
 	logger := setupLogger()
 
 	service := payService.NewService()
 	api := payment.NewApi(service)
 
-	gRPCServer, err := servers.NewGRPCServer(grpcPort, api)
+	gRPCServer, err := servers.NewGRPCServer(config.AppConfig().PaymentGRPC.GRPCAddress(), api)
 	if err != nil {
 		logger.Error("Failed to create gRPC server", slogErr(err))
 		return
 	}
 
 	go func() {
-		logger.Info("GRPC server listening on", slog.Int("port", gRPCServer.GetPort()))
+		logger.Info("GRPC server listening on", slog.String("port", gRPCServer.GetPort()))
 		if err := gRPCServer.Serve(); err != nil {
 			logger.Error("GRPC server failed", slogErr(err))
 			return
@@ -45,7 +46,10 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	gatewayServer, err := servers.NewHTTPServer(ctx, httpPort, grpcPort)
+	gatewayServer, err := servers.NewHTTPServer(
+		ctx,
+		config.AppConfig().PaymentGRPC.HttpAddress(),
+		config.AppConfig().PaymentGRPC.GRPCAddress())
 	if err != nil {
 		logger.Error("Failed to create HTTP server", slogErr(err))
 		return
@@ -53,7 +57,7 @@ func main() {
 
 	// Запускаем HTTP сервер с gRPC Gateway
 	go func() {
-		logger.Info("HTTP server with gRPC-Gateway listening on", slog.Int("port", gatewayServer.GetPort()))
+		logger.Info("HTTP server with gRPC-Gateway listening on", slog.String("port", gatewayServer.GetPort()))
 		if err := gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("Failed to serve HTTP", slogErr(err))
 			return
@@ -65,7 +69,7 @@ func main() {
 
 	logger.Info("Shutting down servers...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), config.AppConfig().PaymentGRPC.ShutdownTimeout())
 	defer shutdownCancel()
 
 	// Сначала останавливаем HTTP сервер

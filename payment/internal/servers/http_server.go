@@ -3,9 +3,7 @@ package servers
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -22,14 +20,14 @@ const (
 
 type HTTPServer struct {
 	server *http.Server
-	port   int
+	port   string
 }
 
-func (s *HTTPServer) GetPort() int {
+func (s *HTTPServer) GetPort() string {
 	return s.port
 }
 
-func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, error) {
+func NewHTTPServer(ctx context.Context, httpPort, grpcPort string) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -37,7 +35,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, er
 	err := paymentV1.RegisterPaymentServiceHandlerFromEndpoint(
 		ctx,
 		mux,
-		setEndpoint(grpcPort),
+		grpcPort,
 		opts,
 	)
 	if err != nil {
@@ -47,7 +45,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort int) (*HTTPServer, er
 	httpMux := registerSwaggerMux(mux)
 
 	gatewayServer := &http.Server{
-		Addr:              setEndpoint(httpPort),
+		Addr:              httpPort,
 		Handler:           httpMux,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
@@ -95,8 +93,4 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 		fileServer.ServeHTTP(w, req)
 	})
 	return httpMux
-}
-
-func setEndpoint(port int) string {
-	return net.JoinHostPort("localhost", strconv.Itoa(port))
 }
