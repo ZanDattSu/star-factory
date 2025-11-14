@@ -4,6 +4,8 @@ go 1.24.0
 
 replace github.com/ZanDattSu/star-factory/shared => ../shared
 
+replace github.com/ZanDattSu/star-factory/platform => ../platform
+
 require (
 	github.com/ZanDattSu/star-factory/shared v0.0.0-00010101000000-000000000000
 	github.com/brianvoe/gofakeit/v7 v7.9.0

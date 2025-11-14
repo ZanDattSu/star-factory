@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log/slog"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +11,7 @@ import (
 	"github.com/go-faster/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	ordApi "order/internal/api/v1/order"
@@ -22,6 +23,7 @@ import (
 	httpServer "order/internal/server"
 	ordService "order/internal/service/order"
 
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
@@ -31,19 +33,17 @@ const (
 )
 
 func main() {
-	err := config.Load(configPath)
-	if err != nil {
-		panic("failed to load config file: " + err.Error())
-	}
-
 	ctx := context.Background()
-	logger := setupLogger()
+
+	if err := config.Load(configPath); err != nil {
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
 
 	dbURI := config.AppConfig().Postgres.URI()
 
 	pool, err := pgxpool.New(ctx, dbURI)
 	if err != nil {
-		logger.Error("Failed to create pgxpool connect", slogErr(err))
+		logger.Error(ctx, "Failed to create pgxpool connect", zap.Error(err))
 		return
 	}
 
@@ -53,7 +53,7 @@ func main() {
 
 	err = pool.Ping(ctx)
 	if err != nil {
-		logger.Error("Database is unavailable", slogErr(err))
+		logger.Error(ctx, "Database is unavailable", zap.Error(err))
 		return
 	}
 
@@ -62,52 +62,50 @@ func main() {
 
 	err = migratorRunner.Up()
 	if err != nil {
-		logger.Error("Database migration error", slogErr(err))
+		logger.Error(ctx, "Database migration error", zap.Error(err))
 		return
 	}
 
-	logger.Info("Creating payment gRPC client...")
+	logger.Info(ctx, "Creating payment gRPC client...")
 
 	paymentConn, err := newGRPCConnectWithoutSecure(config.AppConfig().Payment.PaymentAddress())
 	if err != nil {
-		logger.Error(
+		logger.Error(ctx,
 			"Failed to connect to payment gRPC service",
-			slog.String("port", config.AppConfig().Payment.PaymentServicePort()),
-			slogErr(err))
+			zap.String("port", config.AppConfig().Payment.PaymentServicePort()),
+			zap.Error(err))
 		return
 	}
 	defer func() {
 		if closeErr := paymentConn.Close(); closeErr != nil {
-			logger.Warn("Failed to close payment gRPC connection", slogErr(closeErr))
+			logger.Warn(ctx, "Failed to close payment gRPC connection", zap.Error(closeErr))
 		}
 	}()
 	paymentClient := paymentV1.NewPaymentServiceClient(paymentConn)
-	logger.Info("Payment gRPC client created successfully", slog.String("port", config.AppConfig().Payment.PaymentServicePort()))
+	logger.Info(ctx,
+		"Payment gRPC client created successfully",
+		zap.String("port", config.AppConfig().Payment.PaymentServicePort()))
 
-	logger.Info("======================================")
-
-	logger.Info("Creating inventory gRPC client...")
+	logger.Info(ctx, "Creating inventory gRPC client...")
 	inventoryConn, err := newGRPCConnectWithoutSecure(config.AppConfig().Inventory.InventoryAddress())
 	if err != nil {
-		logger.Error(
+		logger.Error(ctx,
 			"Failed to connect to inventory gRPC service",
-			slog.String("port", config.AppConfig().Inventory.InventoryServicePort()),
-			slogErr(err))
+			zap.String("port", config.AppConfig().Inventory.InventoryServicePort()),
+			zap.Error(err))
 		return
 	}
 	defer func() {
 		if closeErr := inventoryConn.Close(); closeErr != nil {
-			logger.Warn("Failed to close inventory gRPC connection", slogErr(closeErr))
+			logger.Warn(ctx, "Failed to close inventory gRPC connection", zap.Error(closeErr))
 		}
 	}()
 	inventoryClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
-	logger.Info(
+	logger.Info(ctx,
 		"Inventory gRPC client created successfully",
-		slog.String("port", config.AppConfig().Inventory.InventoryServicePort()))
+		zap.String("port", config.AppConfig().Inventory.InventoryServicePort()))
 
-	logger.Info("======================================")
-
-	logger.Info("Creating order API handler...")
+	logger.Info(ctx, "Creating order API handler...")
 	orderRepository := ordRepo.NewRepository(pool)
 	orderService := ordService.NewService(
 		orderRepository,
@@ -116,35 +114,35 @@ func main() {
 	)
 	orderApi := ordApi.NewApi(orderService)
 
-	logger.Info("Creating HTTP server...")
+	logger.Info(ctx, "Creating HTTP server...")
 	server, err := httpServer.NewHTTPServer(config.AppConfig().OrderHttp.OrderAddress(), orderApi)
 	if err != nil {
-		logger.Error("Failed to create HTTP server", slogErr(err))
+		logger.Error(ctx, "Failed to create HTTP server", zap.Error(err))
 		return
 	}
-	logger.Info("HTTP server created successfully")
+	logger.Info(ctx, "HTTP server created successfully")
 
 	go func() {
-		logger.Info("HTTP server listening", slog.String("port", server.GetPort()))
+		logger.Info(ctx, "HTTP server listening", zap.String("port", server.GetPort()))
 		if err := server.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Error("HTTP server error", slogErr(err))
+			logger.Error(ctx, "HTTP server error", zap.Error(err))
 			return
 		}
 	}()
 
 	gracefulShutdown()
 
-	logger.Info("Shutting down server...")
+	logger.Info(ctx, "Shutting down server...")
 
 	shutdownCtx, cancel := context.WithTimeout(ctx, config.AppConfig().OrderHttp.ShutdownTimeout())
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		logger.Error("server shutdown error", slogErr(err))
+		logger.Error(ctx, "server shutdown error", zap.Error(err))
 		return
 	}
 
-	logger.Info("HTTP server stopped successfully")
+	logger.Info(ctx, "HTTP server stopped successfully")
 }
 
 func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
@@ -153,24 +151,6 @@ func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
 	)
 	return conn, err
-}
-
-func slogErr(err error) slog.Attr {
-	return slog.Attr{
-		Key:   "Error",
-		Value: slog.StringValue(err.Error()),
-	}
-}
-
-func setupLogger() *slog.Logger {
-	return slog.New(
-		slog.NewTextHandler(
-			os.Stdout,
-			&slog.HandlerOptions{
-				Level: slog.LevelInfo,
-			},
-		),
-	)
 }
 
 // gracefulShutdown мягко завершает работу программы

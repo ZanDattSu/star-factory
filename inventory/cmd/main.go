@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,11 +12,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.uber.org/zap"
 	partV1Api "inventory/internal/api/v1/part"
 	"inventory/internal/config"
 	partRepo "inventory/internal/repository/part/mongodb"
 	"inventory/internal/servers"
 	partService "inventory/internal/service/part"
+
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 const (
@@ -25,34 +27,34 @@ const (
 )
 
 func main() {
-	err := config.Load(configPath)
-	if err != nil {
+	ctx := context.Background()
+
+	if err := config.Load(configPath); err != nil {
 		panic(fmt.Errorf("failed to load config: %w", err))
 	}
-	logger := setupLogger()
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().Mongo.ConnectTimeout())
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.AppConfig().Mongo.URI()))
 	if err != nil {
-		logger.Error("Failed to create MongoDB connect", slogErr(err))
+		logger.Error(ctx, "Failed to create MongoDB connect", zap.Error(err))
 		return
 	}
 
 	defer func() {
 		if cerr := client.Disconnect(ctx); cerr != nil {
-			logger.Error("Error disconnecting from MongoDB", slogErr(cerr))
+			logger.Error(ctx, "Error disconnecting from MongoDB", zap.Error(cerr))
 		}
 	}()
 
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		logger.Error("Failed to ping MongoDB", slogErr(err))
+		logger.Error(ctx, "Failed to ping MongoDB", zap.Error(err))
 		return
 	}
 
-	logger.Info("Connected to MongoDB")
+	logger.Info(ctx, "Connected to MongoDB")
 
 	partsCollection := client.Database("inventory")
 
@@ -64,15 +66,15 @@ func main() {
 
 	gRPCServer, err := servers.NewGRPCServer(config.AppConfig().InventoryGRPC.Address(), api)
 	if err != nil {
-		logger.Error("Failed to create gRPC server", slogErr(err))
+		logger.Error(ctx, "Failed to create gRPC server", zap.Error(err))
 		return
 	}
 
 	// Запускаем gRPC сервер
 	go func() {
-		logger.Info("GRPC server listening on", slog.String("port", gRPCServer.GetPort()))
+		logger.Info(ctx, "GRPC server listening on", zap.String("port", gRPCServer.GetPort()))
 		if err := gRPCServer.Serve(); err != nil {
-			logger.Error("GRPC server failed", slogErr(err))
+			logger.Error(ctx, "GRPC server failed", zap.Error(err))
 			return
 		}
 	}()
@@ -85,54 +87,36 @@ func main() {
 		config.AppConfig().InventoryGRPC.Address(),
 	)
 	if err != nil {
-		logger.Error("Failed to create HTTP server", slogErr(err))
+		logger.Error(ctx, "Failed to create HTTP server", zap.Error(err))
 		return
 	}
 
 	// Запускаем HTTP сервер с gRPC Gateway
 	go func() {
-		logger.Info("HTTP server with gRPC-Gateway listening on", slog.String("port", gatewayServer.GetPort()))
+		logger.Info(ctx, "HTTP server with gRPC-Gateway listening on", zap.String("port", gatewayServer.GetPort()))
 		if err = gatewayServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Error("Failed to serve HTTP", slogErr(err))
+			logger.Error(ctx, "Failed to serve HTTP", zap.Error(err))
 			return
 		}
 	}()
 
 	gracefulShutdown()
 
-	logger.Info("Shutting down servers...")
+	logger.Info(ctx, "Shutting down servers...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, config.AppConfig().Mongo.ShutdownTimeout())
 	defer shutdownCancel()
 
 	// Сначала останавливаем HTTP сервер
-	logger.Info("Shutting down HTTP server...")
+	logger.Info(ctx, "Shutting down HTTP server...")
 	if err = gatewayServer.Shutdown(shutdownCtx); err != nil {
-		logger.Error("HTTP shutdown error", slogErr(err))
+		logger.Error(ctx, "HTTP shutdown error", zap.Error(err))
 	}
-	logger.Info("HTTP server stopped")
+	logger.Info(ctx, "HTTP server stopped")
 
-	logger.Info("Shutting down gRPC server...")
+	logger.Info(ctx, "Shutting down gRPC server...")
 	gRPCServer.Shutdown()
-	logger.Info("GRPC server stopped")
-}
-
-func slogErr(err error) slog.Attr {
-	return slog.Attr{
-		Key:   "Error",
-		Value: slog.StringValue(err.Error()),
-	}
-}
-
-func setupLogger() *slog.Logger {
-	return slog.New(
-		slog.NewTextHandler(
-			os.Stdout,
-			&slog.HandlerOptions{
-				Level: slog.LevelInfo,
-			},
-		),
-	)
+	logger.Info(ctx, "GRPC server stopped")
 }
 
 // gracefulShutdown мягко завершает работу программы
