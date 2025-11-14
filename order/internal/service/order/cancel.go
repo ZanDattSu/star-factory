@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *service) CancelOrder(ctx context.Context, orderUUID string) error {

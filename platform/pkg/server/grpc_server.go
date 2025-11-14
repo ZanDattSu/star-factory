@@ -9,9 +9,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"platform/pkg/closer"
-	"platform/pkg/grpc/health"
-	"shared/pkg/interceptor"
+
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/grpc/health"
+	"github.com/ZanDattSu/star-factory/shared/pkg/interceptor"
 )
 
 type GRPCServer struct {

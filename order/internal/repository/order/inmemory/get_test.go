@@ -2,7 +2,8 @@ package inmemory
 
 import (
 	"github.com/samber/lo"
-	"order/internal/model"
+
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *SuiteRepository) TestPutAndGetOrderSuccess() {

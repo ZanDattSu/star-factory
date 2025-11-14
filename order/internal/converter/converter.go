@@ -1,8 +1,7 @@
 package converter
 
 import (
-	"order/internal/model"
-
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 

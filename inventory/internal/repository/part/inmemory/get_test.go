@@ -3,7 +3,7 @@ package inmemory
 import (
 	"time"
 
-	"inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 func (s *SuiteRepository) TestGetPartSuccess() {

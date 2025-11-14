@@ -2,6 +2,10 @@ package config
 
 import "time"
 
+type App interface {
+	ShutdownTimeout() time.Duration
+}
+
 type LoggerConfig interface {
 	Level() string
 	AsJson() bool

@@ -8,9 +8,9 @@ import (
 )
 
 type SuiteRepository struct {
-	suite.Suite
-	ctx  context.Context
-	repo *repository
+	suite.Suite //nolint:containedctx
+	ctx         context.Context
+	repo        *repository
 }
 
 func (s *SuiteRepository) SetupTest() {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"inventory/internal/model"
-	"inventory/internal/repository/converter"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository/converter"
 )
 
 // GetPart возвращает деталь по UUID. Потокобезопасно.

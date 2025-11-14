@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"inventory/internal/converter"
-	"inventory/internal/model"
 
+	"github.com/ZanDattSu/star-factory/inventory/internal/converter"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 

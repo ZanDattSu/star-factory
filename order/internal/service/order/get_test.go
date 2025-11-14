@@ -3,7 +3,7 @@ package order
 import (
 	"fmt"
 
-	"order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *SuiteService) TestGetOrderSuccess() {

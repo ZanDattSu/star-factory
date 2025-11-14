@@ -7,12 +7,12 @@ import (
 	"net/http"
 
 	"google.golang.org/grpc"
-	"payment/internal/config"
-	"payment/internal/redirect"
-	"platform/pkg/closer"
-	"platform/pkg/logger"
-	platformServer "platform/pkg/server"
 
+	"github.com/ZanDattSu/star-factory/payment/internal/config"
+	"github.com/ZanDattSu/star-factory/payment/internal/redirect"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/server"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 

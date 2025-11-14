@@ -3,8 +3,8 @@ package mongodb
 import (
 	"context"
 
-	"inventory/internal/model"
-	"inventory/internal/service/part"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/service/part"
 )
 
 func (r *repository) InitTestData() {

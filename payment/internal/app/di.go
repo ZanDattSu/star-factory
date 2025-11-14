@@ -3,10 +3,9 @@ package app
 import (
 	"context"
 
-	payApi "payment/internal/api/v1/payment"
-	"payment/internal/service"
-	payService "payment/internal/service/payment"
-
+	payApi "github.com/ZanDattSu/star-factory/payment/internal/api/v1/payment"
+	"github.com/ZanDattSu/star-factory/payment/internal/service"
+	payService "github.com/ZanDattSu/star-factory/payment/internal/service/payment"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 

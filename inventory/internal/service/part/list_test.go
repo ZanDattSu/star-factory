@@ -1,7 +1,7 @@
 package part
 
 import (
-	"inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 func (s *SuiteService) TestListPartsAllCases() {

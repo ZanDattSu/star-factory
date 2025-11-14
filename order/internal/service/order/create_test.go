@@ -7,8 +7,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	inventoryV1 "order/internal/client/grpc/inventory/v1"
-	"order/internal/model"
+
+	inventoryV1 "github.com/ZanDattSu/star-factory/order/internal/client/grpc/inventory/v1"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *SuiteService) TestCreateOrderSuccess() {

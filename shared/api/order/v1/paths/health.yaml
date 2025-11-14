@@ -1,0 +1,18 @@
+get:
+  summary: Проверить работоспособность сервиса
+  operationId: Health
+  tags:
+    - Order
+  responses:
+    '200':
+      description: Service is available
+      content:
+        application/json:
+          schema:
+            $ref: '../components/health_request.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/internal_server_error.yaml"

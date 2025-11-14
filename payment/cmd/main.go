@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"payment/internal/app"
-	"payment/internal/config"
-	"platform/pkg/closer"
 
+	"github.com/ZanDattSu/star-factory/payment/internal/app"
+	"github.com/ZanDattSu/star-factory/payment/internal/config"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	"github.com/ZanDattSu/star-factory/platform/pkg/path"
 )
 
-const (
-	configPath = "./deploy/compose/payment/.env"
-)
+var configPath = path.GetPathRelativeToRoot("deploy/compose/payment/.env")
 
 func main() {
 	if err := config.Load(configPath); err != nil {

@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"inventory/internal/model"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 // RandomPartsFilter возвращает реалистичный фильтр для тестов ListParts.
@@ -63,7 +64,7 @@ func RandomCategory() model.Category {
 		model.CategoryFuel,
 		model.CategoryEngine,
 	}
-	return categories[rand.IntN(len(categories))]
+	return categories[rand.IntN(len(categories))] //nolint:gosec
 }
 
 func RandomDimensions() *model.Dimensions {
@@ -96,6 +97,7 @@ func RandomMetadata() map[string]*model.Value {
 	meta := make(map[string]*model.Value, len(keys))
 
 	for _, k := range keys {
+		//nolint:gosec
 		switch rand.IntN(4) {
 		case 0:
 			meta[k] = model.NewStringValue(gofakeit.Word())

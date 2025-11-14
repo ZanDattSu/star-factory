@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 type OrderRepository interface {

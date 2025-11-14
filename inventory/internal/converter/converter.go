@@ -2,8 +2,8 @@ package converter
 
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"inventory/internal/model"
 
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 

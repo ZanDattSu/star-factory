@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"inventory/internal/model"
-	"inventory/internal/repository/converter"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository/converter"
 )
 
 func TestPartConvertersAllCases(t *testing.T) {

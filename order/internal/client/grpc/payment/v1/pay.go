@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"order/internal/client/converter"
-	"order/internal/model"
 
+	"github.com/ZanDattSu/star-factory/order/internal/client/converter"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 

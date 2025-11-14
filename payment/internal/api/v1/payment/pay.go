@@ -4,8 +4,7 @@ import (
 	"context"
 	"log"
 
-	"payment/internal/model"
-
+	"github.com/ZanDattSu/star-factory/payment/internal/model"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 

@@ -10,17 +10,19 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/ZanDattSu/star-factory/platform/pkg/path"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 const (
-	apiRelativePath   = "./shared/api"
 	readHeaderTimeout = 5 * time.Second
 )
 
 type HTTPServer struct {
 	server *http.Server
 }
+
+var apiPath = path.GetPathRelativeToRoot("/shared/api")
 
 func NewHTTPServer(ctx context.Context, grpcAddress, httpAddress string) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
@@ -63,7 +65,7 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 
 func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 	// Создаем файловый сервер для Swagger UI
-	fileServer := http.FileServer(http.Dir(apiRelativePath))
+	fileServer := http.FileServer(http.Dir(apiPath))
 
 	httpMux := http.NewServeMux()
 
@@ -75,7 +77,7 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 
 	// Редирект для swagger.json
 	httpMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, apiRelativePath+"/payment/v1/payment.swagger.json")
+		http.ServeFile(w, r, apiPath+"/payment/v1/payment.swagger.json")
 	})
 
 	// Редирект с корня на Swagger UI

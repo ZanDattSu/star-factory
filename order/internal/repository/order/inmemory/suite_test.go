@@ -9,7 +9,7 @@ import (
 
 type SuiteRepository struct {
 	suite.Suite
-	ctx  context.Context
+	ctx  context.Context //nolint:containedctx
 	repo *repository
 }
 

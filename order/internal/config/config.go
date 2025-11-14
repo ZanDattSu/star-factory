@@ -2,12 +2,14 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"order/internal/config/env"
+
+	"github.com/ZanDattSu/star-factory/order/internal/config/env"
 )
 
 var appConfig *config
 
 type config struct {
+	App       App
 	Logger    LoggerConfig
 	OrderHTTP OrderHTTPConfig
 	Payment   PaymentGRPCService
@@ -17,6 +19,11 @@ type config struct {
 
 func Load(path ...string) error {
 	err := godotenv.Load(path...)
+	if err != nil {
+		return err
+	}
+
+	app, err := env.NewAppConfig()
 	if err != nil {
 		return err
 	}
@@ -37,6 +44,7 @@ func Load(path ...string) error {
 	}
 
 	appConfig = &config{
+		App:       app,
 		Logger:    logger,
 		OrderHTTP: order,
 		Payment:   order,

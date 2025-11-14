@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"inventory/internal/model"
-	repoModel "inventory/internal/repository/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	repoModel "github.com/ZanDattSu/star-factory/inventory/internal/repository/model"
 )
 
 // === Part ===

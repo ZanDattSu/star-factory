@@ -7,11 +7,12 @@ import (
 
 	"github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
-	"order/internal/config"
-	"order/internal/server"
-	"platform/pkg/closer"
-	"platform/pkg/logger"
-	"platform/pkg/migrator"
+
+	"github.com/ZanDattSu/star-factory/order/internal/config"
+	"github.com/ZanDattSu/star-factory/order/internal/server"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	"github.com/ZanDattSu/star-factory/platform/pkg/migrator"
 )
 
 type App struct {

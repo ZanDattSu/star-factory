@@ -45,7 +45,7 @@ vars:
   COVERAGE_DIR: '{{.ROOT_DIR}}/coverage'
   COVERAGE_FILE: total.out
 
-  MODULES: inventory order payment
+  MODULES: inventory order payment platform
   SERVICES: core,inventory,order,payment
 
 tasks:
@@ -66,7 +66,7 @@ tasks:
     summary: |
       Эта задача проверяет наличие инструментов форматирования кода gofumpt и gci в директории bin.
       Если инструменты не найдены, они будут автоматически установлены с указанными версиями.
-      
+
       Используется:
         - gofumpt: для форматирования кода Go
         - gci: для сортировки импортов Go
@@ -86,15 +86,17 @@ tasks:
 
   format:
     desc: "Форматирует весь проект gofumpt + gci, исключая mocks"
-    summary: |
-      Форматирует все Go-файлы проекта с использованием gofumpt для стандартизации кода
-      и gci для сортировки импортов, исключая файлы в директориях mocks.
-
-      Использует инструменты:
-        - gofumpt: для стандартизации форматирования
-        - gci: для сортировки импортов по стандартным группам
     deps: [ install-formatters ]
     cmds:
+      - |
+        echo "Сортируем импорты через gci ..."
+
+        for module in {{.MODULES}}; do
+          if [ -d "$module" ]; then
+            echo "Сортируем импорты в $module"
+            find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write --skip-generated -s standard -s default -s "prefix(github.com/ZanDattSu/star-factory)" {} +
+          fi
+        done
       - |
         echo "Форматируем через gofumpt ..."
 
@@ -104,22 +106,14 @@ tasks:
             find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GOFUMPT}} -extra -w {} +
           fi
         done
-      - |
-        echo "Сортируем импорты через gci ..."
 
-        for module in {{.MODULES}}; do
-          if [ -d "$module" ]; then
-            echo "Сортируем импорты в $module"
-            find $module -type f -name '*.go' ! -path '*/mocks/*' -exec {{.GCI}} write -s standard -s default -s "prefix(github.com/ZanDattSu/star-factory)" {} +
-          fi
-        done
 
   install-golangci-lint:
     desc: "Устанавливает golangci-lint в каталог bin"
     summary: |
       Проверяет наличие golangci-lint в директории bin.
       Если инструмент не найден, автоматически устанавливает его через go install.
-      
+
       Устанавливаемая версия: {{.GOLANGCI_LINT_VERSION}}
     cmds:
       - |
@@ -699,3 +693,31 @@ tasks:
         
         echo
         echo "Все тесты API успешно выполнены!"
+
+
+  test-integration:
+    desc: "Запускает интеграционные тесты для указанных модулей"
+    summary: |
+      Запускает интеграционные тесты для модулей, указанных через переменную MODULES.
+      Использует тег "integration" для идентификации интеграционных тестов.
+    cmds:
+      - |
+        ERR=0
+        echo "Запуск интеграционных тестов (по тегу integration) для модулей: {{.MODULES}}"
+        for mod in {{.MODULES}}; do
+          if [ -d "$mod" ]; then
+            echo "Проверка модуля $mod на наличие интеграционных тестов"
+        
+            # Проверяем наличие файлов с тегом integration
+            HAS_TESTS=$(grep -r "//go:build integration" $mod --include="*.go" | wc -l)
+        
+            if [ "$HAS_TESTS" -eq 0 ]; then
+              echo "Модуль $mod не содержит интеграционных тестов (с тегом integration), пропускаем"
+              continue
+            fi
+        
+            echo "Запуск интеграционных тестов для $mod"
+            go test -v -tags=integration ./$mod/... || ERR=1
+          fi
+        done
+        exit $ERR

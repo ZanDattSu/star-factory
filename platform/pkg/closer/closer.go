@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
-	"platform/pkg/logger"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 // Глобальный экземпляр для использования по всему приложению
@@ -191,26 +193,14 @@ func (c *Closer) CloseAll(ctx context.Context) error {
 			close(errCh)
 		}()
 
-		for {
-			select {
-			case <-ctx.Done():
-				c.logger.Info(ctx, "Контекст отменён во время закрытия", zap.Error(ctx.Err()))
-				if result == nil {
-					result = ctx.Err()
-				}
-				return
-			case err, ok := <-errCh:
-				// Канал закрыт - все функции завершились
-				if !ok {
-					c.logger.Info(ctx, "Все ресурсы успешно закрыты")
-					return
-				}
+		for err := range errCh {
+			if result == nil {
 				c.logger.Error(ctx, "Ошибка при закрытии", zap.Error(err))
-				if result == nil {
-					result = err
-				}
+				result = err
 			}
 		}
+
+		c.logger.Info(ctx, "Все ресурсы успешно закрыты")
 	})
 
 	return result

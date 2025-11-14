@@ -1,6 +1,6 @@
 package inmemory
 
-import "order/internal/model"
+import "github.com/ZanDattSu/star-factory/order/internal/model"
 
 func (s *SuiteRepository) TestPutOrderOverridesExisting() {
 	order1 := &model.Order{

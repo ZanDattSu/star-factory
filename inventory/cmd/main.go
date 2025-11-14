@@ -8,16 +8,15 @@ import (
 	"syscall"
 
 	"go.uber.org/zap"
-	"inventory/internal/app"
-	"inventory/internal/config"
-	"platform/pkg/closer"
 
+	"github.com/ZanDattSu/star-factory/inventory/internal/app"
+	"github.com/ZanDattSu/star-factory/inventory/internal/config"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	"github.com/ZanDattSu/star-factory/platform/pkg/path"
 )
 
-const (
-	configPath = "./deploy/compose/inventory/.env"
-)
+var configPath = path.GetPathRelativeToRoot("deploy/compose/inventory/.env")
 
 func main() {
 	if err := config.Load(configPath); err != nil {

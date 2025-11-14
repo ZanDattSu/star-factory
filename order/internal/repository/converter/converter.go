@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"order/internal/model"
-	repoModel "order/internal/repository/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
+	repoModel "github.com/ZanDattSu/star-factory/order/internal/repository/model"
 )
 
 // OrderToRepoModel конвертирует *model.Order → *repoModel.Order.

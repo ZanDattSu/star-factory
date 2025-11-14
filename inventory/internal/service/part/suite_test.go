@@ -5,13 +5,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	"inventory/internal/repository/mocks"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository/mocks"
 )
 
 type SuiteService struct {
 	suite.Suite
 
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 
 	partRepository *mocks.PartRepository
 

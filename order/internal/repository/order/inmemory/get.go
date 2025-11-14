@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"order/internal/model"
-	"order/internal/repository/converter"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/repository/converter"
 )
 
 func (r *repository) GetOrder(_ context.Context, uuid string) (*model.Order, error) {

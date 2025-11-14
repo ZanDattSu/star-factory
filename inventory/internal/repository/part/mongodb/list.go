@@ -6,7 +6,8 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"inventory/internal/model"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 func (r *repository) ListParts(ctx context.Context) ([]*model.Part, error) {

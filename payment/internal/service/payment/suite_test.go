@@ -10,7 +10,7 @@ import (
 type ServiceSuite struct {
 	suite.Suite
 
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 
 	service *service
 }

@@ -4,8 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"order/internal/service"
-
+	"github.com/ZanDattSu/star-factory/order/internal/service"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 

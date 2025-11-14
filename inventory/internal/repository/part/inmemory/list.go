@@ -3,9 +3,9 @@ package inmemory
 import (
 	"context"
 
-	"inventory/internal/model"
-	"inventory/internal/repository/converter"
-	repoModel "inventory/internal/repository/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository/converter"
+	repoModel "github.com/ZanDattSu/star-factory/inventory/internal/repository/model"
 )
 
 func (r *repository) ListParts(_ context.Context) ([]*model.Part, error) {

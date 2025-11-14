@@ -7,12 +7,12 @@ import (
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"inventory/internal/config"
-	"inventory/internal/redirect"
-	"platform/pkg/closer"
-	"platform/pkg/logger"
-	platformServer "platform/pkg/server"
 
+	"github.com/ZanDattSu/star-factory/inventory/internal/config"
+	"github.com/ZanDattSu/star-factory/inventory/internal/redirect"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/server"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 

@@ -2,7 +2,8 @@ package postgresql
 
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
-	repo "order/internal/repository"
+
+	repo "github.com/ZanDattSu/star-factory/order/internal/repository"
 )
 
 // Компиляторная проверка: убеждаемся, что *repository реализует интерфейс OrderRepository.

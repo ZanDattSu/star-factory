@@ -8,7 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	repo "inventory/internal/repository"
+
+	repo "github.com/ZanDattSu/star-factory/inventory/internal/repository"
 )
 
 var _ repo.PartRepository = (*repository)(nil)

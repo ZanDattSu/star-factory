@@ -1,8 +1,8 @@
 package part
 
 import (
-	"inventory/internal/repository"
-	srvc "inventory/internal/service"
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository"
+	srvc "github.com/ZanDattSu/star-factory/inventory/internal/service"
 )
 
 // Компиляторная проверка: убеждаемся, что *service реализует интерфейс PartService.

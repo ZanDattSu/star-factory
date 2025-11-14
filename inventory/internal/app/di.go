@@ -7,14 +7,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	inventoryV1Api "inventory/internal/api/v1/part"
-	"inventory/internal/config"
-	"inventory/internal/repository"
-	inventoryRepository "inventory/internal/repository/part/mongodb"
-	"inventory/internal/service"
-	inventoryService "inventory/internal/service/part"
-	"platform/pkg/closer"
 
+	inventoryV1Api "github.com/ZanDattSu/star-factory/inventory/internal/api/v1/part"
+	"github.com/ZanDattSu/star-factory/inventory/internal/config"
+	"github.com/ZanDattSu/star-factory/inventory/internal/repository"
+	inventoryRepository "github.com/ZanDattSu/star-factory/inventory/internal/repository/part/mongodb"
+	"github.com/ZanDattSu/star-factory/inventory/internal/service"
+	inventoryService "github.com/ZanDattSu/star-factory/inventory/internal/service/part"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
@@ -49,7 +49,7 @@ func (d *diContainer) PartService(ctx context.Context) service.PartService {
 
 func (d *diContainer) PartRepository(ctx context.Context) repository.PartRepository {
 	if d.partRepository == nil {
-		d.partRepository = inventoryRepository.NewRepository(d.MongoDBDatabase(ctx))
+		d.partRepository = inventoryRepository.NewRepository(d.MongoDBDatabase(ctx)) //nolint:contextcheck
 	}
 
 	return d.partRepository

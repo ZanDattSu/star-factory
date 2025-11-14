@@ -2,7 +2,8 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"inventory/internal/config/env"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/config/env"
 )
 
 var appConfig *config

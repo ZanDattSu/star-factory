@@ -2,7 +2,8 @@ package payment
 
 import (
 	"github.com/brianvoe/gofakeit/v7"
-	"payment/internal/model"
+
+	"github.com/ZanDattSu/star-factory/payment/internal/model"
 )
 
 func (s *ServiceSuite) TestPaySuccess() {

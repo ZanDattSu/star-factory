@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 type PartRepository interface {

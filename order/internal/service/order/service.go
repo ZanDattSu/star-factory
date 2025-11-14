@@ -1,9 +1,9 @@
 package order
 
 import (
-	gRPCClient "order/internal/client/grpc"
-	"order/internal/repository"
-	srvc "order/internal/service"
+	gRPCClient "github.com/ZanDattSu/star-factory/order/internal/client/grpc"
+	"github.com/ZanDattSu/star-factory/order/internal/repository"
+	srvc "github.com/ZanDattSu/star-factory/order/internal/service"
 )
 
 // Компиляторная проверка: убеждаемся, что *service реализует интерфейс OrderService.

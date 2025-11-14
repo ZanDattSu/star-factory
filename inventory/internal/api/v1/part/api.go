@@ -1,8 +1,7 @@
 package part
 
 import (
-	"inventory/internal/service"
-
+	"github.com/ZanDattSu/star-factory/inventory/internal/service"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 

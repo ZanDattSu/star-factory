@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"inventory/internal/model"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 func (r *repository) GetPart(ctx context.Context, uuid string) (*model.Part, error) {

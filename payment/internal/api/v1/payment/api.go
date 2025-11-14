@@ -1,8 +1,7 @@
 package payment
 
 import (
-	"payment/internal/service"
-
+	"github.com/ZanDattSu/star-factory/payment/internal/service"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 

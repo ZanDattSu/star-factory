@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"inventory/internal/model"
+
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 func (s *SuiteService) TestGetPartSuccess() {

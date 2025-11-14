@@ -6,18 +6,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
-	"order/internal/app"
-	"order/internal/config"
-	"platform/pkg/closer"
-	"platform/pkg/logger"
+
+	"github.com/ZanDattSu/star-factory/order/internal/app"
+	"github.com/ZanDattSu/star-factory/order/internal/config"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	"github.com/ZanDattSu/star-factory/platform/pkg/path"
 )
 
-const (
-	configPath = "./deploy/compose/order/.env"
-)
+var configPath = path.GetPathRelativeToRoot("deploy/compose/order/.env")
 
 func main() {
 	if err := config.Load(configPath); err != nil {
@@ -48,7 +47,7 @@ func main() {
 
 // gracefulShutdown мягко завершает работу программы
 func gracefulShutdown() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().App.ShutdownTimeout())
 	defer cancel()
 
 	if err := closer.CloseAll(ctx); err != nil {

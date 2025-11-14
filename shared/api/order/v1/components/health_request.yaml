@@ -1,0 +1,13 @@
+type: object
+required:
+  - status
+  - service
+properties:
+  status:
+    type: string
+    description: Статус работоспособности сервиса
+    example: ok
+  service:
+    type: string
+    description: Имя сервиса
+    example: "order-service"

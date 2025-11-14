@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 type InventoryClient interface {

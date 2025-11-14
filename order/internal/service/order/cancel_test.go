@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/stretchr/testify/mock"
-	"order/internal/model"
+
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *SuiteService) TestCancelOrderSuccess() {

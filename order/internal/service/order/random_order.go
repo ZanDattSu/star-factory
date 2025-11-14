@@ -5,7 +5,8 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/samber/lo"
-	"order/internal/model"
+
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func RandomOrder() *model.Order {
@@ -21,7 +22,7 @@ func RandomOrder() *model.Order {
 }
 
 func RandomPartUuids() []string {
-	countParts := 1 + rand.IntN(9) // [1 - 10]
+	countParts := 1 + rand.IntN(9) //nolint:gosec
 	partUuids := make([]string, countParts)
 
 	for i := 0; i < countParts; i++ {
@@ -38,7 +39,7 @@ func RandomPaymentMethod() model.PaymentMethod {
 		model.PaymentMethodInvestorMoney,
 		model.PaymentMethodSbp,
 	}
-	return paymentMethods[rand.IntN(len(paymentMethods))]
+	return paymentMethods[rand.IntN(len(paymentMethods))] //nolint:gosec
 }
 
 func RandomOrderStatus() model.OrderStatus {
@@ -47,5 +48,5 @@ func RandomOrderStatus() model.OrderStatus {
 		model.OrderStatusPaid,
 		model.OrderStatusCancelled,
 	}
-	return statuses[rand.IntN(len(statuses))]
+	return statuses[rand.IntN(len(statuses))] //nolint:gosec
 }

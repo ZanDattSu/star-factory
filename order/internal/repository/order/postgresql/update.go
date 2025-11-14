@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (r *repository) UpdateOrder(ctx context.Context, _ string, order *model.Order) error {

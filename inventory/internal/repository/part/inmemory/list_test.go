@@ -1,8 +1,8 @@
 package inmemory
 
 import (
-	"inventory/internal/model"
-	"inventory/internal/service/part"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/service/part"
 )
 
 func (s *SuiteRepository) TestListPartsSuccess() {

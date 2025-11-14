@@ -3,8 +3,8 @@ package inmemory
 import (
 	"context"
 
-	"order/internal/model"
-	"order/internal/repository/converter"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
+	"github.com/ZanDattSu/star-factory/order/internal/repository/converter"
 )
 
 func (r *repository) PutOrder(_ context.Context, uuid string, order *model.Order) error {

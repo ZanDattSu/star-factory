@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"payment/internal/model"
+	"github.com/ZanDattSu/star-factory/payment/internal/model"
 )
 
 type PaymentService interface {

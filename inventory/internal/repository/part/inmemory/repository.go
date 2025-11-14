@@ -3,8 +3,8 @@ package inmemory
 import (
 	"sync"
 
-	repo "inventory/internal/repository"
-	repoModel "inventory/internal/repository/model"
+	repo "github.com/ZanDattSu/star-factory/inventory/internal/repository"
+	repoModel "github.com/ZanDattSu/star-factory/inventory/internal/repository/model"
 )
 
 // Компиляторная проверка: убеждаемся, что *repository реализует интерфейс PartRepository.

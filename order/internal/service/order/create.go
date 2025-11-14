@@ -6,8 +6,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	inventoryV1 "order/internal/client/grpc/inventory/v1"
-	"order/internal/model"
+
+	inventoryV1 "github.com/ZanDattSu/star-factory/order/internal/client/grpc/inventory/v1"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 var partsNotFound = "one or more parts not found"

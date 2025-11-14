@@ -2,7 +2,8 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"payment/internal/config/env"
+
+	"github.com/ZanDattSu/star-factory/payment/internal/config/env"
 )
 
 var appConfig *config

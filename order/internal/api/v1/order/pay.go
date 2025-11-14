@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"order/internal/converter"
-	"order/internal/model"
-
+	"github.com/ZanDattSu/star-factory/order/internal/converter"
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
 

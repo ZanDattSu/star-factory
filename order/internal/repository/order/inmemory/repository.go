@@ -3,8 +3,8 @@ package inmemory
 import (
 	"sync"
 
-	repo "order/internal/repository"
-	repoModel "order/internal/repository/model"
+	repo "github.com/ZanDattSu/star-factory/order/internal/repository"
+	repoModel "github.com/ZanDattSu/star-factory/order/internal/repository/model"
 )
 
 // Компиляторная проверка: убеждаемся, что *repository реализует интерфейс OrderRepository.

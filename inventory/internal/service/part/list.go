@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/inventory/internal/model"
 )
 
 // ListParts возвращает отфильтрованный список деталей.

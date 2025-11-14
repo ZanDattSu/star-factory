@@ -5,14 +5,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-	clientMocks "order/internal/client/grpc/mocks"
-	"order/internal/repository/mocks"
+
+	clientMocks "github.com/ZanDattSu/star-factory/order/internal/client/grpc/mocks"
+	"github.com/ZanDattSu/star-factory/order/internal/repository/mocks"
 )
 
 type SuiteService struct {
 	suite.Suite
 
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 
 	orderRepository *mocks.OrderRepository
 	paymentClient   *clientMocks.PaymentClient

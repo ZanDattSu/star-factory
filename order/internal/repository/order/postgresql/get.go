@@ -5,7 +5,8 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
-	"order/internal/model"
+
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (r *repository) GetOrder(ctx context.Context, uuid string) (*model.Order, error) {
@@ -43,8 +44,8 @@ func (r *repository) GetOrder(ctx context.Context, uuid string) (*model.Order, e
 		return nil, err
 	}
 
-	order.PaymentMethod, _ = model.PaymentMethodFromID(paymentMethodID)
-	order.Status, _ = model.OrderStatusFromID(statusID)
+	order.PaymentMethod, _ = model.PaymentMethodFromID(paymentMethodID) //nolint:gosec
+	order.Status, _ = model.OrderStatusFromID(statusID)                 //nolint:gosec
 
 	return &order, nil
 }

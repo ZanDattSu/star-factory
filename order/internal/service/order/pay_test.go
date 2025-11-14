@@ -8,7 +8,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"order/internal/model"
+
+	"github.com/ZanDattSu/star-factory/order/internal/model"
 )
 
 func (s *SuiteService) TestPayOrderSuccess() {
