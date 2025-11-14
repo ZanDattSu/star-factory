@@ -10,7 +10,7 @@ type LoggerConfig interface {
 type PaymentGRPCConfig interface {
 	GRPCAddress() string
 	GRPCPort() string
-	HttpAddress() string
-	HttpPort() string
+	HTTPAddress() string
+	HTTPPort() string
 	ShutdownTimeout() time.Duration
 }

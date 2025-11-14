@@ -7,7 +7,7 @@ type LoggerConfig interface {
 	AsJson() bool
 }
 
-type OrderHttpConfig interface {
+type OrderHTTPConfig interface {
 	OrderAddress() string
 	OrderPort() string
 	ReadHeaderTimeout() time.Duration

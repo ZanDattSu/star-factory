@@ -2,15 +2,23 @@ package config
 
 import "time"
 
+type App interface {
+	ShutdownTimeout() time.Duration
+}
+
 type LoggerConfig interface {
 	Level() string
 	AsJson() bool
 }
 
 type InventoryGRPCConfig interface {
-	Address() string
+	GRPCAddress() string
 	GRPCPort() string
-	HttpPort() string
+}
+
+type InventoryHTTPConfig interface {
+	HTTPAddress() string
+	HTTPPort() string
 }
 
 type MongoConfig interface {

@@ -1,9 +1,8 @@
-package servers
+package redirect
 
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"time"
 
@@ -15,20 +14,15 @@ import (
 )
 
 const (
-	apiRelativePath   = "../shared/api"
+	apiRelativePath   = "./shared/api"
 	readHeaderTimeout = 5 * time.Second
 )
 
 type HTTPServer struct {
 	server *http.Server
-	port   string
 }
 
-func (s *HTTPServer) GetPort() string {
-	return s.port
-}
-
-func NewHTTPServer(ctx context.Context, httpPort, grpcPort string) (*HTTPServer, error) {
+func NewHTTPServer(ctx context.Context, grpcAddress, httpAddress string) (*HTTPServer, error) {
 	mux := runtime.NewServeMux()
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
@@ -36,7 +30,7 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort string) (*HTTPServer,
 	err := inventoryV1.RegisterInventoryServiceHandlerFromEndpoint(
 		ctx,
 		mux,
-		setEndpoint(grpcPort),
+		grpcAddress,
 		opts,
 	)
 	if err != nil {
@@ -46,14 +40,13 @@ func NewHTTPServer(ctx context.Context, httpPort, grpcPort string) (*HTTPServer,
 	httpMux := registerSwaggerMux(mux)
 
 	gatewayServer := &http.Server{
-		Addr:              setEndpoint(httpPort),
+		Addr:              httpAddress,
 		Handler:           httpMux,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
 	return &HTTPServer{
 		server: gatewayServer,
-		port:   httpPort,
 	}, nil
 }
 
@@ -62,11 +55,7 @@ func (s *HTTPServer) Serve() error {
 }
 
 func (s *HTTPServer) Shutdown(ctx context.Context) error {
-	if err := s.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("HTTP server shutdown error: %w", err)
-	}
-
-	return nil
+	return s.server.Shutdown(ctx)
 }
 
 func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
@@ -95,8 +84,4 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 		fileServer.ServeHTTP(w, req)
 	})
 	return httpMux
-}
-
-func setEndpoint(port string) string {
-	return net.JoinHostPort("localhost", port)
 }

@@ -7,9 +7,9 @@ import (
 	"github.com/caarlos0/env/v11"
 )
 
-type orderHttpEnvConfig struct {
-	HttpHost              string        `env:"HTTP_HOST,required"`
-	HttpPort              string        `env:"HTTP_PORT,required"`
+type orderHTTPEnvConfig struct {
+	HTTPHost              string        `env:"HTTP_HOST,required"`
+	HTTPPort              string        `env:"HTTP_PORT,required"`
 	InventoryGRPCHost     string        `env:"INVENTORY_GRPC_HOST,required"`
 	InventoryGRPCPort     string        `env:"INVENTORY_GRPC_PORT,required"`
 	PaymentGRPCHost       string        `env:"PAYMENT_GRPC_HOST,required"`
@@ -19,11 +19,11 @@ type orderHttpEnvConfig struct {
 }
 
 type orderHttpConfig struct {
-	raw orderHttpEnvConfig
+	raw orderHTTPEnvConfig
 }
 
-func NewOrderHttpConfig() (*orderHttpConfig, error) {
-	var raw orderHttpEnvConfig
+func NewOrderHTTPConfig() (*orderHttpConfig, error) {
+	var raw orderHTTPEnvConfig
 	if err := env.Parse(&raw); err != nil {
 		return nil, err
 	}
@@ -31,11 +31,11 @@ func NewOrderHttpConfig() (*orderHttpConfig, error) {
 }
 
 func (cfg *orderHttpConfig) OrderAddress() string {
-	return net.JoinHostPort(cfg.raw.HttpHost, cfg.raw.HttpPort)
+	return net.JoinHostPort(cfg.raw.HTTPHost, cfg.raw.HTTPPort)
 }
 
 func (cfg *orderHttpConfig) OrderPort() string {
-	return cfg.raw.HttpPort
+	return cfg.raw.HTTPPort
 }
 
 func (cfg *orderHttpConfig) PaymentAddress() string {

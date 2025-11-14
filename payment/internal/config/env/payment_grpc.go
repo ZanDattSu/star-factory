@@ -10,7 +10,7 @@ import (
 type paymentGrpcEnvConfig struct {
 	Host                string        `env:"GRPC_HOST,required"`
 	GRPCPort            string        `env:"GRPC_PORT,required"`
-	HttpPort            string        `env:"HTTP_GATEWAY_PORT,required"`
+	HTTPPort            string        `env:"HTTP_GATEWAY_PORT,required"`
 	HttpShutdownTimeout time.Duration `env:"HTTP_SHUTDOWN_TIMEOUT,required"`
 }
 
@@ -34,12 +34,12 @@ func (p *paymentGrpcConfig) GRPCPort() string {
 	return p.raw.GRPCPort
 }
 
-func (p *paymentGrpcConfig) HttpAddress() string {
-	return net.JoinHostPort(p.raw.Host, p.raw.HttpPort)
+func (p *paymentGrpcConfig) HTTPAddress() string {
+	return net.JoinHostPort(p.raw.Host, p.raw.HTTPPort)
 }
 
-func (p *paymentGrpcConfig) HttpPort() string {
-	return p.raw.HttpPort
+func (p *paymentGrpcConfig) HTTPPort() string {
+	return p.raw.HTTPPort
 }
 
 func (p *paymentGrpcConfig) ShutdownTimeout() time.Duration {

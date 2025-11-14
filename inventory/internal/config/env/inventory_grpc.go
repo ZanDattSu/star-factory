@@ -9,7 +9,7 @@ import (
 type inventoryGRPCEnvConfig struct {
 	Host     string `env:"GRPC_HOST,required"`
 	GRPCPort string `env:"GRPC_PORT,required"`
-	HttpPort string `env:"HTTP_GATEWAY_PORT,required"`
+	HTTPPort string `env:"HTTP_GATEWAY_PORT,required"`
 }
 
 type inventoryGRPCConfig struct {
@@ -24,7 +24,7 @@ func NewInventoryGRPCConfig() (*inventoryGRPCConfig, error) {
 	return &inventoryGRPCConfig{raw: raw}, nil
 }
 
-func (cfg *inventoryGRPCConfig) Address() string {
+func (cfg *inventoryGRPCConfig) GRPCAddress() string {
 	return net.JoinHostPort(cfg.raw.Host, cfg.raw.GRPCPort)
 }
 
@@ -32,6 +32,10 @@ func (cfg *inventoryGRPCConfig) GRPCPort() string {
 	return cfg.raw.GRPCPort
 }
 
-func (cfg *inventoryGRPCConfig) HttpPort() string {
-	return cfg.raw.HttpPort
+func (cfg *inventoryGRPCConfig) HTTPAddress() string {
+	return net.JoinHostPort(cfg.raw.Host, cfg.raw.HTTPPort)
+}
+
+func (cfg *inventoryGRPCConfig) HTTPPort() string {
+	return cfg.raw.HTTPPort
 }

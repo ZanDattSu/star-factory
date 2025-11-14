@@ -8,13 +8,20 @@ import (
 var appConfig *config
 
 type config struct {
+	App           App
 	Logger        LoggerConfig
 	InventoryGRPC InventoryGRPCConfig
+	InventoryHTTP InventoryHTTPConfig
 	Mongo         MongoConfig
 }
 
 func Load(path ...string) error {
 	err := godotenv.Load(path...)
+	if err != nil {
+		return err
+	}
+
+	app, err := env.NewAppConfig()
 	if err != nil {
 		return err
 	}
@@ -35,8 +42,10 @@ func Load(path ...string) error {
 	}
 
 	appConfig = &config{
+		App:           app,
 		Logger:        logger,
 		InventoryGRPC: inventory,
+		InventoryHTTP: inventory,
 		Mongo:         mongo,
 	}
 

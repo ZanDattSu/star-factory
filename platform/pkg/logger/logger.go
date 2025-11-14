@@ -138,26 +138,41 @@ func WithContext(ctx context.Context) *logger {
 
 // Debug enrich-aware debug log
 func Debug(ctx context.Context, msg string, fields ...zap.Field) {
+	if globalLogger == nil {
+		return
+	}
 	globalLogger.Debug(ctx, msg, fields...)
 }
 
 // Info enrich-aware info log
 func Info(ctx context.Context, msg string, fields ...zap.Field) {
+	if globalLogger == nil {
+		return
+	}
 	globalLogger.Info(ctx, msg, fields...)
 }
 
 // Warn enrich-aware warn log
 func Warn(ctx context.Context, msg string, fields ...zap.Field) {
+	if globalLogger == nil {
+		return
+	}
 	globalLogger.Warn(ctx, msg, fields...)
 }
 
 // Error enrich-aware error log
 func Error(ctx context.Context, msg string, fields ...zap.Field) {
+	if globalLogger == nil {
+		return
+	}
 	globalLogger.Error(ctx, msg, fields...)
 }
 
 // Fatal enrich-aware fatal log
 func Fatal(ctx context.Context, msg string, fields ...zap.Field) {
+	if globalLogger == nil {
+		return
+	}
 	globalLogger.Fatal(ctx, msg, fields...)
 }
 

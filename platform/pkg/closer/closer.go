@@ -119,7 +119,7 @@ func (c *Closer) AddNamed(name string, f func(context.Context) error) {
 	})
 }
 
-// handleSignals обрабатывает системные сигналы и вызывает CloseAll с fresh shutdown context
+// handleSignals обрабатывает системные сигналы и вызывает CloseAll с shutdown context
 func (c *Closer) handleSignals(signals ...os.Signal) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, signals...)

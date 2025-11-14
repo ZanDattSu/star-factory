@@ -19,10 +19,9 @@ const (
 
 type HTTPServer struct {
 	server *http.Server
-	port   string
 }
 
-func NewHTTPServer(port string, api orderV1.Handler) (*HTTPServer, error) {
+func NewHTTPServer(address string, api orderV1.Handler) (*HTTPServer, error) {
 	// Создаем OpenAPI сервер
 	openAPIHandler, err := orderV1.NewServer(api)
 	if err != nil {
@@ -42,7 +41,7 @@ func NewHTTPServer(port string, api orderV1.Handler) (*HTTPServer, error) {
 
 	// Создаем HTTP сервер
 	server := &http.Server{
-		Addr:              port,
+		Addr:              address,
 		Handler:           r,
 		ReadHeaderTimeout: readHeaderTimeout, // Защита от Slowloris атак
 		// тип DDoS-атаки, при которой атакующий умышленно медленно отправляет HTTP-заголовки,
@@ -53,7 +52,6 @@ func NewHTTPServer(port string, api orderV1.Handler) (*HTTPServer, error) {
 
 	return &HTTPServer{
 		server: server,
-		port:   port,
 	}, nil
 }
 
@@ -66,8 +64,4 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 		return fmt.Errorf("HTTP server shutdown error: %w", err)
 	}
 	return nil
-}
-
-func (s *HTTPServer) GetPort() string {
-	return s.port
 }
