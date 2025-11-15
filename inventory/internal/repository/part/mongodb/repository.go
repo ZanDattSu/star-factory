@@ -35,5 +35,8 @@ func NewRepository(db *mongo.Database) *repository {
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create index %s: %s", indexUUID, err))
 	}
-	return &repository{collection: partsCollection}
+
+	r := &repository{collection: partsCollection}
+	r.InitTestData()
+	return r
 }

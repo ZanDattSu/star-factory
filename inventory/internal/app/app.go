@@ -1,11 +1,11 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	"github.com/ZanDattSu/star-factory/inventory/internal/config"
