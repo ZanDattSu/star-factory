@@ -18,7 +18,7 @@ func (s *SuiteService) TestPayOrderSuccess() {
 		UserUUID:   gofakeit.UUID(),
 		PartUuids:  RandomPartUuids(),
 		TotalPrice: gofakeit.Price(100, 1000),
-		Status:     model.OrderStatusPendingPayment,
+		Status:     model.OrderStatusPENDINGPAYMENT,
 	}
 	paymentMethod := RandomPaymentMethod()
 	expectedTransactionUUID := gofakeit.UUID()
@@ -30,7 +30,7 @@ func (s *SuiteService) TestPayOrderSuccess() {
 		s.ctx,
 		order.OrderUUID,
 		mock.MatchedBy(func(o *model.Order) bool {
-			return o.Status == model.OrderStatusPaid &&
+			return o.Status == model.OrderStatusPAID &&
 				o.PaymentMethod == paymentMethod &&
 				o.TransactionUUID != nil &&
 				*o.TransactionUUID == expectedTransactionUUID &&
@@ -42,6 +42,8 @@ func (s *SuiteService) TestPayOrderSuccess() {
 
 	s.paymentClient.On("PayOrder", s.ctx, order.OrderUUID, order.UserUUID, paymentMethod).
 		Return(expectedTransactionUUID, nil).Once()
+
+	s.orderProducerService.On("ProduceOrderPaid", s.ctx, mock.Anything).Return(nil)
 
 	transactionUUID, err := s.service.PayOrder(s.ctx, paymentMethod, order.OrderUUID)
 
@@ -77,7 +79,7 @@ func (s *SuiteService) TestPayOrderPaymentFailed() {
 		UserUUID:   gofakeit.UUID(),
 		PartUuids:  RandomPartUuids(),
 		TotalPrice: gofakeit.Price(100, 1000),
-		Status:     model.OrderStatusPendingPayment,
+		Status:     model.OrderStatusPENDINGPAYMENT,
 	}
 	paymentMethod := RandomPaymentMethod()
 
@@ -105,7 +107,7 @@ func (s *SuiteService) TestPayOrderPaymentFailedNoMutation() {
 	order := &model.Order{
 		OrderUUID:       gofakeit.UUID(),
 		UserUUID:        gofakeit.UUID(),
-		Status:          model.OrderStatusPendingPayment,
+		Status:          model.OrderStatusPENDINGPAYMENT,
 		PaymentMethod:   "",
 		TransactionUUID: nil,
 	}

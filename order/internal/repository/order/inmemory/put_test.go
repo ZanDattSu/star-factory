@@ -7,14 +7,14 @@ func (s *SuiteRepository) TestPutOrderOverridesExisting() {
 		OrderUUID:     "order-override",
 		UserUUID:      "user-1",
 		PaymentMethod: model.PaymentMethodCard,
-		Status:        model.OrderStatusPendingPayment,
+		Status:        model.OrderStatusPENDINGPAYMENT,
 	}
 
 	order2 := &model.Order{
 		OrderUUID:     "order-override",
 		UserUUID:      "user-2",
 		PaymentMethod: model.PaymentMethodSbp,
-		Status:        model.OrderStatusPaid,
+		Status:        model.OrderStatusPAID,
 	}
 
 	err := s.repo.PutOrder(s.ctx, order1.OrderUUID, order1)
@@ -24,21 +24,21 @@ func (s *SuiteRepository) TestPutOrderOverridesExisting() {
 	got1, err1 := s.repo.GetOrder(s.ctx, order1.OrderUUID)
 	s.Require().NoError(err1)
 	s.Equal("user-1", got1.UserUUID)
-	s.Equal(model.OrderStatusPendingPayment, got1.Status)
+	s.Equal(model.OrderStatusPENDINGPAYMENT, got1.Status)
 
 	_ = s.repo.PutOrder(s.ctx, order2.OrderUUID, order2)
 	got2, err2 := s.repo.GetOrder(s.ctx, order2.OrderUUID)
 
 	s.Require().NoError(err2)
 	s.Equal("user-2", got2.UserUUID)
-	s.Equal(model.OrderStatusPaid, got2.Status)
+	s.Equal(model.OrderStatusPAID, got2.Status)
 }
 
 func (s *SuiteRepository) TestConcurrentAccess() {
 	order := &model.Order{
 		OrderUUID: "order-concurrent",
 		UserUUID:  "user-777",
-		Status:    model.OrderStatusPendingPayment,
+		Status:    model.OrderStatusPENDINGPAYMENT,
 	}
 
 	done := make(chan struct{})

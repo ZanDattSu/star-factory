@@ -108,7 +108,7 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/inventory.v1.InventoryService/GetPart", runtime.WithHTTPPathPattern("/api/v1/inventory/{uuid}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/inventory.v1.InventoryService/GetPart", runtime.WithHTTPPathPattern("/api/v1/part/{uuid}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -128,7 +128,7 @@ func RegisterInventoryServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/inventory.v1.InventoryService/ListParts", runtime.WithHTTPPathPattern("/api/v1/inventory/list"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/inventory.v1.InventoryService/ListParts", runtime.WithHTTPPathPattern("/api/v1/part/list"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -186,7 +186,7 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/inventory.v1.InventoryService/GetPart", runtime.WithHTTPPathPattern("/api/v1/inventory/{uuid}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/inventory.v1.InventoryService/GetPart", runtime.WithHTTPPathPattern("/api/v1/part/{uuid}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -203,7 +203,7 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/inventory.v1.InventoryService/ListParts", runtime.WithHTTPPathPattern("/api/v1/inventory/list"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/inventory.v1.InventoryService/ListParts", runtime.WithHTTPPathPattern("/api/v1/part/list"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -220,8 +220,8 @@ func RegisterInventoryServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_InventoryService_GetPart_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "inventory", "uuid"}, ""))
-	pattern_InventoryService_ListParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "inventory", "list"}, ""))
+	pattern_InventoryService_GetPart_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "part", "uuid"}, ""))
+	pattern_InventoryService_ListParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "part", "list"}, ""))
 )
 
 var (

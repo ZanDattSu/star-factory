@@ -31,3 +31,5 @@ node_modules
 /deploy/compose/order/.env
 /deploy/compose/inventory/.env
 /deploy/compose/payment/.env
+/deploy/compose/core/.env
+/deploy/compose/assembly/.env

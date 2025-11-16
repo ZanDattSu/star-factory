@@ -1,6 +1,10 @@
 package config
 
-import "time"
+import (
+	"time"
+
+	"github.com/IBM/sarama"
+)
 
 type App interface {
 	ShutdownTimeout() time.Duration
@@ -32,4 +36,19 @@ type PostgresConfig interface {
 	URI() string
 	DatabaseName() string
 	MigrationsPath() string
+}
+
+type KafkaConfig interface {
+	Brokers() []string
+}
+
+type OrderProducerConfig interface {
+	Topic() string
+	Config() *sarama.Config
+}
+
+type AssemblyConsumerConfig interface {
+	Topic() string
+	GroupID() string
+	Config() *sarama.Config
 }

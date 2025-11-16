@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package events.v1;
+
+import "validate/validate.proto";
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/v1;events_v1";
+
+// Способ оплаты
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;      // Неизвестный способ
+  PAYMENT_METHOD_CARD = 1;             // Банковская карта
+  PAYMENT_METHOD_SBP = 2;              // Система быстрых платежей
+  PAYMENT_METHOD_CREDIT_CARD = 3;      // Кредитная карта
+  PAYMENT_METHOD_INVESTOR_MONEY = 4;   // Деньги инвестора (внутренний метод)
+}
+
+// Событие: успешная оплата
+message OrderPaid {
+  string event_uuid = 1 [
+    (validate.rules).string.uuid = true
+  ];
+
+  string order_uuid = 2 [
+    (validate.rules).string.uuid = true
+  ];
+
+  string user_uuid = 3 [
+    (validate.rules).string.uuid = true
+  ];
+
+  PaymentMethod payment_method = 4 [
+    (validate.rules).enum.defined_only = true
+  ];
+
+  string transaction_uuid = 5 [
+    (validate.rules).string.uuid = true
+  ];
+}
+
+// Событие: корабль успешно собран
+message ShipAssembledEvent {
+  string event_uuid = 1 [
+    (validate.rules).string.uuid = true
+  ];
+
+  string order_uuid = 2 [
+    (validate.rules).string.uuid = true
+  ];
+
+  string user_uuid = 3 [
+    (validate.rules).string.uuid = true
+  ];
+
+  int64 build_time_sec = 4 [
+    // время сборки должно быть > 0
+    (validate.rules).int64.gt = 0
+  ];
+}

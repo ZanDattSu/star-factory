@@ -5,24 +5,27 @@ import "fmt"
 type OrderStatus string
 
 const (
-	OrderStatusUnspecified    OrderStatus = "UNSPECIFIED"
-	OrderStatusPendingPayment OrderStatus = "PENDING_PAYMENT"
-	OrderStatusPaid           OrderStatus = "PAID"
-	OrderStatusCancelled      OrderStatus = "CANCELLED"
+	OrderStatusUNSPECIFIED    OrderStatus = "UNSPECIFIED"
+	OrderStatusPENDINGPAYMENT OrderStatus = "PENDING_PAYMENT"
+	OrderStatusPAID           OrderStatus = "PAID"
+	OrderStatusCANCELLED      OrderStatus = "CANCELLED"
+	OrderStatusASSEMBLED      OrderStatus = "ASSEMBLED"
 )
 
 var orderStatusToID = map[OrderStatus]int{
-	OrderStatusUnspecified:    1,
-	OrderStatusPendingPayment: 2,
-	OrderStatusPaid:           3,
-	OrderStatusCancelled:      4,
+	OrderStatusUNSPECIFIED:    1,
+	OrderStatusPENDINGPAYMENT: 2,
+	OrderStatusPAID:           3,
+	OrderStatusCANCELLED:      4,
+	OrderStatusASSEMBLED:      5,
 }
 
 var idToOrderStatus = map[int]OrderStatus{
-	1: OrderStatusUnspecified,
-	2: OrderStatusPendingPayment,
-	3: OrderStatusPaid,
-	4: OrderStatusCancelled,
+	1: OrderStatusUNSPECIFIED,
+	2: OrderStatusPENDINGPAYMENT,
+	3: OrderStatusPAID,
+	4: OrderStatusCANCELLED,
+	5: OrderStatusASSEMBLED,
 }
 
 func (s OrderStatus) ID() (int, error) {
@@ -36,7 +39,7 @@ func (s OrderStatus) ID() (int, error) {
 func OrderStatusFromID(id int) (OrderStatus, error) {
 	s, ok := idToOrderStatus[id]
 	if !ok {
-		return OrderStatusUnspecified, fmt.Errorf("unknown order status id: %d", id)
+		return OrderStatusUNSPECIFIED, fmt.Errorf("unknown order status id: %d", id)
 	}
 	return s, nil
 }

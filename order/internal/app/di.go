@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/sarama"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -14,24 +15,51 @@ import (
 	inventoryService "github.com/ZanDattSu/star-factory/order/internal/client/grpc/inventory/v1"
 	paymentService "github.com/ZanDattSu/star-factory/order/internal/client/grpc/payment/v1"
 	"github.com/ZanDattSu/star-factory/order/internal/config"
+	kafkaDecoder "github.com/ZanDattSu/star-factory/order/internal/converter/kafka"
+	"github.com/ZanDattSu/star-factory/order/internal/converter/kafka/decoder"
 	orderRepo "github.com/ZanDattSu/star-factory/order/internal/repository"
 	"github.com/ZanDattSu/star-factory/order/internal/repository/order/postgresql"
 	orderService "github.com/ZanDattSu/star-factory/order/internal/service"
+	"github.com/ZanDattSu/star-factory/order/internal/service/consumer/order_consumer"
 	ordService "github.com/ZanDattSu/star-factory/order/internal/service/order"
+	"github.com/ZanDattSu/star-factory/order/internal/service/produser/order_producer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	wrappedKafka "github.com/ZanDattSu/star-factory/platform/pkg/kafka"
+	wrappedKafkaConsumer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/consumer"
+	wrappedKafkaProducer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/producer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+	kafkaMiddleware "github.com/ZanDattSu/star-factory/platform/pkg/middleware/kafka"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
 type diContainer struct {
-	orderApi        orderApi.OrderApi
-	orderService    orderService.OrderService
+	// API
+	orderApi orderApi.OrderApi
+
+	// Services
+	orderService            orderService.OrderService
+	assemblyConsumerService orderService.ConsumerService
+	orderProducerService    orderService.OrderProducerService
+
+	// Repository
 	orderRepository orderRepo.OrderRepository
 
+	// gRPC Clients
 	paymentClient   gRPCClient.PaymentClient
 	inventoryClient gRPCClient.InventoryClient
 
+	// PostgreSQL
 	postgreSQLPool *pgxpool.Pool
+
+	// Kafka Decoder
+	assemblyDecoder kafkaDecoder.AssemblyDecoder
+
+	// Kafka Infrastructure
+	consumerGroup    sarama.ConsumerGroup
+	assemblyConsumer wrappedKafka.Consumer
+	orderProducer    wrappedKafka.Producer
+	syncProducer     sarama.SyncProducer
 }
 
 func NewDIContainer() *diContainer {
@@ -52,6 +80,7 @@ func (d *diContainer) OrderService(ctx context.Context) orderService.OrderServic
 			d.OrderRepository(ctx),
 			d.PaymentClient(ctx),
 			d.InventoryClient(ctx),
+			d.OrderProducerService(),
 		)
 	}
 
@@ -148,4 +177,93 @@ func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
 	)
 	return conn, err
+}
+
+func (d *diContainer) AssemblyConsumerService(ctx context.Context) orderService.ConsumerService {
+	if d.assemblyConsumerService == nil {
+		d.assemblyConsumerService = order_consumer.NewService(
+			d.AssemblyConsumer(),
+			d.AssemblyDecoder(),
+			d.OrderService(ctx),
+			d.OrderRepository(ctx),
+		)
+	}
+	return d.assemblyConsumerService
+}
+
+func (d *diContainer) AssemblyConsumer() wrappedKafka.Consumer {
+	if d.assemblyConsumer == nil {
+		d.assemblyConsumer = wrappedKafkaConsumer.NewConsumer(
+			d.ConsumerGroup(),
+			[]string{
+				config.AppConfig().AssemblyConsumer.Topic(),
+			},
+			logger.Logger(),
+			kafkaMiddleware.Logging(logger.Logger()),
+		)
+	}
+	return d.assemblyConsumer
+}
+
+func (d *diContainer) ConsumerGroup() sarama.ConsumerGroup {
+	if d.consumerGroup == nil {
+		consumerGroup, err := sarama.NewConsumerGroup(
+			config.AppConfig().Kafka.Brokers(),
+			config.AppConfig().AssemblyConsumer.GroupID(),
+			config.AppConfig().AssemblyConsumer.Config(),
+		)
+		if err != nil {
+			panic(fmt.Sprintf("failed to create consumer group: %s\n", err.Error()))
+		}
+		closer.AddNamed("Kafka consumer group", func(ctx context.Context) error {
+			return d.consumerGroup.Close()
+		})
+
+		d.consumerGroup = consumerGroup
+	}
+	return d.consumerGroup
+}
+
+func (d *diContainer) AssemblyDecoder() kafkaDecoder.AssemblyDecoder {
+	if d.assemblyDecoder == nil {
+		d.assemblyDecoder = decoder.NewAssemblyDecoder()
+	}
+	return d.assemblyDecoder
+}
+
+func (d *diContainer) OrderProducerService() orderService.OrderProducerService {
+	if d.orderProducerService == nil {
+		d.orderProducerService = order_producer.NewService(d.OrderProducer())
+	}
+	return d.orderProducerService
+}
+
+func (d *diContainer) OrderProducer() wrappedKafka.Producer {
+	if d.orderProducer == nil {
+		d.orderProducer = wrappedKafkaProducer.NewProducer(
+			d.SyncProducer(),
+			config.AppConfig().OrderProducer.Topic(),
+			logger.Logger(),
+		)
+	}
+	return d.orderProducer
+}
+
+func (d *diContainer) SyncProducer() sarama.SyncProducer {
+	if d.syncProducer == nil {
+		p, err := sarama.NewSyncProducer(
+			config.AppConfig().Kafka.Brokers(),
+			config.AppConfig().OrderProducer.Config(),
+		)
+		if err != nil {
+			panic("failed to create sync producer: " + err.Error())
+		}
+
+		closer.AddNamed("Kafka sync producer", func(ctx context.Context) error {
+			return p.Close()
+		})
+
+		d.syncProducer = p
+	}
+	return d.syncProducer
 }

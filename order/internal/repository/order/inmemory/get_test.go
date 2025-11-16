@@ -13,7 +13,7 @@ func (s *SuiteRepository) TestPutAndGetOrderSuccess() {
 		PartUuids:       []string{"part-1", "part-2"},
 		TotalPrice:      2500.50,
 		PaymentMethod:   model.PaymentMethodCard,
-		Status:          model.OrderStatusPaid,
+		Status:          model.OrderStatusPAID,
 		TransactionUUID: lo.ToPtr("txn-777"),
 	}
 

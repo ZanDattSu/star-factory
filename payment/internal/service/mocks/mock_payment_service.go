@@ -4,8 +4,8 @@ package mocks
 
 import (
 	context "context"
-	model "github.com/ZanDattSu/star-factory/payment/internal/model"
 
+	model "github.com/ZanDattSu/star-factory/payment/internal/model"
 	mock "github.com/stretchr/testify/mock"
 )
 

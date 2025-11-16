@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ZanDattSu/star-factory/order/internal/converter"
+	api2 "github.com/ZanDattSu/star-factory/order/internal/converter/api"
 	"github.com/ZanDattSu/star-factory/order/internal/model"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
@@ -32,7 +32,7 @@ func (a *api) PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params
 		}, nil
 	}
 
-	transactionUUID, err := a.orderService.PayOrder(ctx, converter.PaymentMethodToModel(req.PaymentMethod), params.OrderUUID)
+	transactionUUID, err := a.orderService.PayOrder(ctx, api2.PaymentMethodToModel(req.PaymentMethod), params.OrderUUID)
 	if err != nil {
 		notFound := &model.OrderNotFoundError{}
 		if errors.As(err, &notFound) {

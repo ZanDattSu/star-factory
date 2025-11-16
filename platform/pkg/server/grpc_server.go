@@ -12,7 +12,7 @@ import (
 
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/grpc/health"
-	"github.com/ZanDattSu/star-factory/shared/pkg/interceptor"
+	"github.com/ZanDattSu/star-factory/platform/pkg/interceptor"
 )
 
 type GRPCServer struct {

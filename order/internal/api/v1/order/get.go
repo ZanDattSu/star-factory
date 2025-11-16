@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ZanDattSu/star-factory/order/internal/converter"
+	api2 "github.com/ZanDattSu/star-factory/order/internal/converter/api"
 	"github.com/ZanDattSu/star-factory/order/internal/model"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
 )
@@ -27,5 +27,5 @@ func (a *api) GetOrder(ctx context.Context, params orderV1.GetOrderParams) (orde
 		return nil, fmt.Errorf("get order error: %w", err)
 	}
 
-	return converter.OrderToAPI(order), nil
+	return api2.OrderToAPI(order), nil
 }

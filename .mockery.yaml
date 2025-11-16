@@ -8,31 +8,32 @@ issue-845-fix: True
 
 packages:
   # Inventory service
-  inventory/internal/service:
+  github.com/ZanDattSu/star-factory/inventory/internal/service:
     config:
       all: true
 
   # Inventory repository
-  inventory/internal/repository:
+  github.com/ZanDattSu/star-factory/inventory/internal/repository:
     config:
       all: true
 
   # Inventory and Payment clients
-  order/internal/client/grpc:
+  github.com/ZanDattSu/star-factory/order/internal/client/grpc:
     config:
       all: true
 
   # Order service
-  order/internal/service:
+  github.com/ZanDattSu/star-factory/order/internal/service:
     config:
       all: true
+      recursive: true
 
   # Order repository
-  order/internal/repository:
+  github.com/ZanDattSu/star-factory/order/internal/repository:
     config:
       all: true
 
   # Payment service
-  payment/internal/service:
+  github.com/ZanDattSu/star-factory/payment/internal/service:
     config:
       all: true

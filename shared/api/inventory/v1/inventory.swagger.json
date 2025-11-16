@@ -21,7 +21,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/inventory/list": {
+    "/api/v1/part/list": {
       "post": {
         "operationId": "InventoryService_ListParts",
         "responses": {
@@ -53,7 +53,7 @@
         ]
       }
     },
-    "/api/v1/inventory/{uuid}": {
+    "/api/v1/part/{uuid}": {
       "get": {
         "operationId": "InventoryService_GetPart",
         "responses": {
@@ -86,7 +86,7 @@
     }
   },
   "definitions": {
-    "inventoryV1Value": {
+    "inventoryv1Value": {
       "type": "object",
       "properties": {
         "string_value": {
@@ -270,7 +270,7 @@
         "metadata": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/inventoryV1Value"
+            "$ref": "#/definitions/inventoryv1Value"
           },
           "title": "доп. данные"
         },

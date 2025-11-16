@@ -44,9 +44,9 @@ func RandomPaymentMethod() model.PaymentMethod {
 
 func RandomOrderStatus() model.OrderStatus {
 	statuses := []model.OrderStatus{
-		model.OrderStatusPendingPayment,
-		model.OrderStatusPaid,
-		model.OrderStatusCancelled,
+		model.OrderStatusPENDINGPAYMENT,
+		model.OrderStatusPAID,
+		model.OrderStatusCANCELLED,
 	}
 	return statuses[rand.IntN(len(statuses))] //nolint:gosec
 }

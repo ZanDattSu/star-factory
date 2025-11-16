@@ -47,7 +47,7 @@ func (s *service) CreateOrder(ctx context.Context, userUUID string, partUuids []
 		UserUUID:   userUUID,
 		PartUuids:  partUuids,
 		TotalPrice: totalPrice,
-		Status:     model.OrderStatusPendingPayment,
+		Status:     model.OrderStatusPENDINGPAYMENT,
 	}
 
 	err = s.repository.PutOrder(ctx, orderUUID, newOrder)

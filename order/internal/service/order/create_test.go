@@ -39,7 +39,7 @@ func (s *SuiteService) TestCreateOrderSuccess() {
 			return order.UserUUID == userUUID &&
 				slices.Equal(order.PartUuids, partUuids) &&
 				order.TotalPrice == expectedTotalPrice &&
-				order.Status == model.OrderStatusPendingPayment
+				order.Status == model.OrderStatusPENDINGPAYMENT
 		})).
 		Return(nil).
 		Once()

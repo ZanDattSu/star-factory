@@ -8,6 +8,7 @@ import (
 
 	clientMocks "github.com/ZanDattSu/star-factory/order/internal/client/grpc/mocks"
 	"github.com/ZanDattSu/star-factory/order/internal/repository/mocks"
+	serviceMocks "github.com/ZanDattSu/star-factory/order/internal/service/mocks"
 )
 
 type SuiteService struct {
@@ -15,9 +16,10 @@ type SuiteService struct {
 
 	ctx context.Context //nolint:containedctx
 
-	orderRepository *mocks.OrderRepository
-	paymentClient   *clientMocks.PaymentClient
-	inventoryClient *clientMocks.InventoryClient
+	orderRepository      *mocks.OrderRepository
+	paymentClient        *clientMocks.PaymentClient
+	inventoryClient      *clientMocks.InventoryClient
+	orderProducerService *serviceMocks.OrderProducerService
 
 	service *service
 }
@@ -28,8 +30,14 @@ func (s *SuiteService) SetupTest() {
 	s.orderRepository = mocks.NewOrderRepository(s.T())
 	s.paymentClient = clientMocks.NewPaymentClient(s.T())
 	s.inventoryClient = clientMocks.NewInventoryClient(s.T())
+	s.orderProducerService = serviceMocks.NewOrderProducerService(s.T())
 
-	s.service = NewService(s.orderRepository, s.paymentClient, s.inventoryClient)
+	s.service = NewService(
+		s.orderRepository,
+		s.paymentClient,
+		s.inventoryClient,
+		s.orderProducerService,
+	)
 }
 
 func (s *SuiteService) TearDownTest() {

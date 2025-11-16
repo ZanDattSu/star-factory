@@ -10,7 +10,7 @@ import (
 
 func (s *SuiteService) TestCancelOrderSuccess() {
 	order := RandomOrder()
-	order.Status = model.OrderStatusPendingPayment
+	order.Status = model.OrderStatusPENDINGPAYMENT
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
@@ -21,7 +21,7 @@ func (s *SuiteService) TestCancelOrderSuccess() {
 			s.ctx,
 			order.OrderUUID,
 			mock.MatchedBy(func(o *model.Order) bool {
-				return o.Status == model.OrderStatusCancelled
+				return o.Status == model.OrderStatusCANCELLED
 			}),
 		).Return(nil).Once()
 
@@ -50,7 +50,7 @@ func (s *SuiteService) TestCancelOrderNotFound() {
 
 func (s *SuiteService) TestCancelOrderConflictPaid() {
 	order := RandomOrder()
-	order.Status = model.OrderStatusPaid
+	order.Status = model.OrderStatusPAID
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).
@@ -69,7 +69,7 @@ func (s *SuiteService) TestCancelOrderConflictPaid() {
 
 func (s *SuiteService) TestCancelOrderConflictAlreadyCancelled() {
 	order := RandomOrder()
-	order.Status = model.OrderStatusCancelled
+	order.Status = model.OrderStatusCANCELLED
 
 	s.orderRepository.
 		On("GetOrder", s.ctx, order.OrderUUID).

@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/jackc/pgx/v5/stdlib"
@@ -32,7 +33,32 @@ func New(ctx context.Context) (*App, error) {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	return a.runServer(ctx)
+	errCh := make(chan error, 2)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		if err := a.runServer(ctx); err != nil {
+			errCh <- fmt.Errorf("HHTP server crashed: %w", err)
+		}
+	}()
+	go func() {
+		if err := a.runConsumer(ctx); err != nil {
+			errCh <- fmt.Errorf("consumer crashed: %w", err)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Info(ctx, "Shutdown signal received")
+	case err := <-errCh:
+		logger.Error(ctx, "Component crashed, shutting down", zap.Error(err))
+		cancel()
+		<-ctx.Done()
+		return err
+	}
+	return nil
 }
 
 func (a *App) initDeps(ctx context.Context) error {
@@ -108,6 +134,17 @@ func (a *App) runServer(ctx context.Context) error {
 	logger.Info(ctx, "HTTP server listening on: "+config.AppConfig().OrderHTTP.OrderPort())
 	err := a.server.Serve()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) runConsumer(ctx context.Context) error {
+	logger.Info(ctx, "Ship Assembled Kafka consumer starting")
+
+	err := a.diContainer.AssemblyConsumerService(ctx).RunConsumer(ctx)
+	if err != nil {
 		return err
 	}
 

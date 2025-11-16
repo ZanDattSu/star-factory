@@ -1552,8 +1552,7 @@ type EnumSchema struct {
 	// be imported into the protofile. If no message is identified, the Ref will
 	// be used verbatim in the output.
 	// For example:
-	//
-	//	`ref: ".google.protobuf.Timestamp"`.
+	//  `ref: ".google.protobuf.Timestamp"`.
 	Ref string `protobuf:"bytes,8,opt,name=ref,proto3" json:"ref,omitempty"`
 	// Custom properties that start with "x-" such as "x-foo" used to describe
 	// extra functionality that is not covered by the standard OpenAPI Specification.
@@ -1690,8 +1689,7 @@ type JSONSchema struct {
 	// be imported into the protofile. If no message is identified, the Ref will
 	// be used verbatim in the output.
 	// For example:
-	//
-	//	`ref: ".google.protobuf.Timestamp"`.
+	//  `ref: ".google.protobuf.Timestamp"`.
 	Ref string `protobuf:"bytes,3,opt,name=ref,proto3" json:"ref,omitempty"`
 	// The title of the schema.
 	Title string `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`

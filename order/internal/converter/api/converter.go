@@ -1,4 +1,4 @@
-package converter
+package api
 
 import (
 	"github.com/ZanDattSu/star-factory/order/internal/model"
@@ -61,11 +61,11 @@ func OrderToModel(orderDto *orderV1.OrderDto) *model.Order {
 
 func OrderStatusToAPI(status model.OrderStatus) orderV1.OrderStatus {
 	switch status {
-	case model.OrderStatusPendingPayment:
+	case model.OrderStatusPENDINGPAYMENT:
 		return orderV1.OrderStatusPENDINGPAYMENT
-	case model.OrderStatusPaid:
+	case model.OrderStatusPAID:
 		return orderV1.OrderStatusPAID
-	case model.OrderStatusCancelled:
+	case model.OrderStatusCANCELLED:
 		return orderV1.OrderStatusCANCELLED
 	default:
 		return orderV1.OrderStatusNOTSET
@@ -75,13 +75,13 @@ func OrderStatusToAPI(status model.OrderStatus) orderV1.OrderStatus {
 func OrderStatusFromAPI(status orderV1.OrderStatus) model.OrderStatus {
 	switch status {
 	case orderV1.OrderStatusPENDINGPAYMENT:
-		return model.OrderStatusPendingPayment
+		return model.OrderStatusPENDINGPAYMENT
 	case orderV1.OrderStatusPAID:
-		return model.OrderStatusPaid
+		return model.OrderStatusPAID
 	case orderV1.OrderStatusCANCELLED:
-		return model.OrderStatusCancelled
+		return model.OrderStatusCANCELLED
 	default:
-		return model.OrderStatusUnspecified
+		return model.OrderStatusUNSPECIFIED
 	}
 }
 

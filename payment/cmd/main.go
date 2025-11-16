@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -56,7 +55,7 @@ func main() {
 // gracefulShutdown мягко завершает работу программы
 // gracefulShutdown мягко завершает работу программы
 func gracefulShutdown() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // конфиг
+	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().PaymentGRPC.ShutdownTimeout())
 	defer cancel()
 
 	if err := closer.CloseAll(ctx); err != nil {

@@ -30,9 +30,13 @@ func NewHTTPServer(ctx context.Context, grpcAddress, httpAddress string) (*HTTPS
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	err := inventoryV1.RegisterInventoryServiceHandlerFromEndpoint(
+
 		ctx,
+
 		mux,
+
 		grpcAddress,
+
 		opts,
 	)
 	if err != nil {
@@ -42,8 +46,10 @@ func NewHTTPServer(ctx context.Context, grpcAddress, httpAddress string) (*HTTPS
 	httpMux := registerSwaggerMux(mux)
 
 	gatewayServer := &http.Server{
-		Addr:              httpAddress,
-		Handler:           httpMux,
+		Addr: httpAddress,
+
+		Handler: httpMux,
+
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
@@ -62,6 +68,7 @@ func (s *HTTPServer) Shutdown(ctx context.Context) error {
 
 func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 	// Создаем файловый сервер для Swagger UI
+
 	fileServer := http.FileServer(http.Dir(apiPath))
 
 	httpMux := http.NewServeMux()
@@ -69,21 +76,30 @@ func registerSwaggerMux(mux *runtime.ServeMux) *http.ServeMux {
 	httpMux.Handle("/api/", mux)
 
 	// Swagger UI эндпоинты
+
 	httpMux.Handle("/swagger-ui.html", fileServer)
+
 	httpMux.Handle("/inventory/v1/inventory.swagger.json", fileServer)
 
 	// Редирект для swagger.json
+
 	httpMux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, apiPath+"/inventory/v1/inventory.swagger.json")
 	})
 
 	// Редирект с корня на Swagger UI
+
 	httpMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path == "/" {
+
 			http.Redirect(w, req, "/swagger-ui.html", http.StatusMovedPermanently)
+
 			return
+
 		}
+
 		fileServer.ServeHTTP(w, req)
 	})
+
 	return httpMux
 }
