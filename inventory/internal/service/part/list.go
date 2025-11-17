@@ -20,14 +20,74 @@ func (s *service) ListParts(ctx context.Context, filter *model.PartsFilter) ([]*
 		return parts, nil
 	}
 
-	repoParts := parts
-	repoFilter := *filter
+	// Предварительно создаём set'ы для O(1) lookup
+	uuidSet := toSet(filter.Uuids)
+	nameSet := toSet(filter.Names)
+	countrySet := toSet(filter.ManufacturerCountries)
+	tagSet := toSet(filter.Tags)
+	categorySet := toSet(filter.Categories)
 
-	// Строим и применяем pipeline фильтров
-	pipeline := buildFilterPipeline(&repoFilter)
-	filteredParts := applyFilterPipeline(repoParts, pipeline)
+	// Один проход по всем деталям с ранним выходом
+	filteredParts := make([]*model.Part, 0, len(parts))
+	for _, part := range parts {
+		if matchesPart(
+			part, filter, uuidSet, nameSet, countrySet, tagSet, categorySet,
+		) {
+			filteredParts = append(filteredParts, part)
+		}
+	}
 
 	return filteredParts, nil
+}
+
+// matchesPart проверяет, соответствует ли деталь всем критериям фильтра
+// Логика: AND между полями фильтра, OR внутри каждого поля
+//
+// В отличие от реализации через slices.Contains (O(n²)),
+// использует внутренний set на основе map для поиска за O(1),
+// что обеспечивает общую сложность O(n + m).
+//
+// n — количество деталей, m — количество элементов фильтра.
+func matchesPart(
+	part *model.Part,
+	filter *model.PartsFilter,
+	uuidSet, nameSet, countrySet, tagSet map[string]struct{},
+	categorySet map[model.Category]struct{},
+) bool {
+	if len(filter.Uuids) > 0 {
+		if _, found := uuidSet[part.Uuid]; !found {
+			return false
+		}
+	}
+
+	if len(filter.Names) > 0 {
+		if _, found := nameSet[part.Name]; !found {
+			return false
+		}
+	}
+
+	if len(filter.Categories) > 0 {
+		if _, found := categorySet[part.Category]; !found {
+			return false
+		}
+	}
+
+	if len(filter.ManufacturerCountries) > 0 {
+		if part.Manufacturer == nil {
+			return false
+		}
+		if _, found := countrySet[part.Manufacturer.Country]; !found {
+			return false
+		}
+	}
+
+	if len(filter.Tags) > 0 {
+		if !hasAnyTag(part.Tags, tagSet) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // filterIsEmpty проверяет, пустой ли фильтр.
@@ -40,108 +100,6 @@ func filterIsEmpty(f *model.PartsFilter) bool {
 		len(f.Categories) == 0 &&
 		len(f.ManufacturerCountries) == 0 &&
 		len(f.Tags) == 0
-}
-
-// FilterFunc представляет одну стадию фильтрации в pipeline.
-type FilterFunc func([]*model.Part) []*model.Part
-
-// applyFilterPipeline последовательно применяет все фильтры.
-func applyFilterPipeline(parts []*model.Part, pipeline []FilterFunc) []*model.Part {
-	for _, filter := range pipeline {
-		parts = filter(parts)
-		if len(parts) == 0 {
-			return parts
-		}
-	}
-	return parts
-}
-
-// buildFilterPipeline создаёт цепочку фильтров на основе PartsFilter.
-func buildFilterPipeline(f *model.PartsFilter) []FilterFunc {
-	var pipeline []FilterFunc
-
-	if len(f.Uuids) > 0 {
-		pipeline = append(pipeline, func(parts []*model.Part) []*model.Part {
-			return filterByField(parts, f.Uuids, func(p *model.Part) string { return p.Uuid })
-		})
-	}
-
-	if len(f.Names) > 0 {
-		pipeline = append(pipeline, func(parts []*model.Part) []*model.Part {
-			return filterByField(parts, f.Names, func(p *model.Part) string { return p.Name })
-		})
-	}
-
-	if len(f.Categories) > 0 {
-		pipeline = append(pipeline, func(parts []*model.Part) []*model.Part {
-			return filterByField(parts, f.Categories, func(p *model.Part) model.Category { return p.Category })
-		})
-	}
-
-	if len(f.ManufacturerCountries) > 0 {
-		pipeline = append(pipeline, func(parts []*model.Part) []*model.Part {
-			return filterByField(parts, f.ManufacturerCountries, func(p *model.Part) string {
-				if p.Manufacturer == nil {
-					return ""
-				}
-				return p.Manufacturer.Country
-			})
-		})
-	}
-
-	if len(f.Tags) > 0 {
-		pipeline = append(pipeline, func(parts []*model.Part) []*model.Part {
-			return filterByTags(parts, f.Tags)
-		})
-	}
-
-	return pipeline
-}
-
-// filterByField возвращает детали, у которых значение поля есть в values.
-//
-// В отличие от реализации через slices.Contains (O(n²)),
-// использует внутренний set на основе map для поиска за O(1),
-// что обеспечивает общую сложность O(n + m).
-//
-// n — количество деталей, m — количество элементов фильтра.
-func filterByField[T comparable](
-	parts []*model.Part,
-	values []T,
-	getField func(*model.Part) T,
-) []*model.Part {
-	if len(values) == 0 {
-		return parts
-	}
-
-	set := toSet(values)
-	result := make([]*model.Part, 0, len(parts))
-
-	for _, p := range parts {
-		if _, exists := set[getField(p)]; exists {
-			result = append(result, p)
-		}
-	}
-
-	return result
-}
-
-// filterByTags оставляет детали с хотя бы одним тегом из списка (OR-логика).
-func filterByTags(parts []*model.Part, tags []string) []*model.Part {
-	if len(tags) == 0 {
-		return parts
-	}
-
-	tagSet := toSet(tags)
-	result := make([]*model.Part, 0, len(parts))
-
-	for _, p := range parts {
-		if hasAnyTag(p.Tags, tagSet) {
-			result = append(result, p)
-		}
-	}
-
-	return result
 }
 
 // hasAnyTag проверяет наличие хотя бы одного тега из set'а.
