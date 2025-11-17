@@ -127,7 +127,9 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 }
 
 func (a *App) runHTTPServer(ctx context.Context) error {
-	logger.Info(ctx, fmt.Sprintf("HTTP server with gRPC-Gateway listening on %s", config.AppConfig().PaymentGRPC.HTTPAddress()))
+	logger.Info(ctx, fmt.Sprintf(
+		"HTTP server with gRPC-Gateway and Swagger UI listening on localhost:%s",
+		config.AppConfig().PaymentGRPC.HTTPPort()))
 	if err := a.httpServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
