@@ -2,40 +2,74 @@ package part
 
 import (
 	"context"
-	"errors"
+	"fmt"
+
+	"go.uber.org/zap"
 
 	"github.com/ZanDattSu/star-factory/inventory/internal/model"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 // ListParts возвращает отфильтрованный список деталей.
-// Использует pipeline для последовательной фильтрации с AND-логикой между полями
-// и OR-логикой внутри каждого поля.
 func (s *service) ListParts(ctx context.Context, filter *model.PartsFilter) ([]*model.Part, error) {
+	var filterFields []zap.Field
+	filterFields = append(filterFields, zap.Bool("filter_empty", filterIsEmpty(filter)))
+	if filter != nil {
+		filterFields = append(filterFields,
+			zap.Int("filter_uuids_count", len(filter.Uuids)),
+			zap.Int("filter_names_count", len(filter.Names)),
+			zap.Int("filter_categories_count", len(filter.Categories)),
+			zap.Int("filter_countries_count", len(filter.ManufacturerCountries)),
+			zap.Int("filter_tags_count", len(filter.Tags)),
+		)
+	} else {
+		filterFields = append(filterFields,
+			zap.Int("filter_uuids_count", 0),
+			zap.Int("filter_names_count", 0),
+			zap.Int("filter_categories_count", 0),
+			zap.Int("filter_countries_count", 0),
+			zap.Int("filter_tags_count", 0),
+		)
+	}
+	logger.Debug(ctx, "Listing parts", filterFields...)
+
 	parts, err := s.repository.ListParts(ctx)
 	if err != nil {
-		return []*model.Part{}, errors.New("error listing parts")
+		logger.Error(ctx, "Failed to list parts from repository",
+			zap.Error(err),
+		)
+		return []*model.Part{}, fmt.Errorf("error listing parts: %w", err)
 	}
 
+	logger.Debug(ctx, "Parts retrieved from repository",
+		zap.Int("total_parts", len(parts)),
+	)
+
 	if filterIsEmpty(filter) {
+		logger.Debug(ctx, "Filter is empty, returning all parts",
+			zap.Int("parts_count", len(parts)),
+		)
 		return parts, nil
 	}
 
-	// Предварительно создаём set'ы для O(1) lookup
+	// Создаём set'ы для O(1) проверки
 	uuidSet := toSet(filter.Uuids)
 	nameSet := toSet(filter.Names)
 	countrySet := toSet(filter.ManufacturerCountries)
 	tagSet := toSet(filter.Tags)
 	categorySet := toSet(filter.Categories)
 
-	// Один проход по всем деталям с ранним выходом
 	filteredParts := make([]*model.Part, 0, len(parts))
 	for _, part := range parts {
-		if matchesPart(
-			part, filter, uuidSet, nameSet, countrySet, tagSet, categorySet,
-		) {
+		if matchesPart(part, filter, uuidSet, nameSet, countrySet, tagSet, categorySet) {
 			filteredParts = append(filteredParts, part)
 		}
 	}
+
+	logger.Info(ctx, "Parts filtered successfully",
+		zap.Int("total_parts", len(parts)),
+		zap.Int("filtered_parts", len(filteredParts)),
+	)
 
 	return filteredParts, nil
 }
@@ -82,7 +116,7 @@ func matchesPart(
 	}
 
 	if len(filter.Tags) > 0 {
-		if !hasAnyTag(part.Tags, tagSet) {
+		if !hasAnyTag(tagSet, part.Tags) {
 			return false
 		}
 	}
@@ -103,7 +137,7 @@ func filterIsEmpty(f *model.PartsFilter) bool {
 }
 
 // hasAnyTag проверяет наличие хотя бы одного тега из set'а.
-func hasAnyTag(partTags []string, tagSet map[string]struct{}) bool {
+func hasAnyTag(tagSet map[string]struct{}, partTags []string) bool {
 	for _, tag := range partTags {
 		if _, exists := tagSet[tag]; exists {
 			return true

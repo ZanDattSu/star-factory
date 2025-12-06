@@ -11,12 +11,12 @@ type KafkaConfig interface {
 	Brokers() []string
 }
 
-type OrderProducerConfig interface {
+type AssemblyProducerConfig interface {
 	Topic() string
 	Config() *sarama.Config
 }
 
-type OrderConsumerConfig interface {
+type AssemblyConsumerConfig interface {
 	Topic() string
 	GroupID() string
 	Config() *sarama.Config

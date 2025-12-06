@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -38,6 +39,7 @@ func (s *SuiteService) SetupTest() {
 		s.inventoryClient,
 		s.orderProducerService,
 	)
+	logger.SetNopLogger()
 }
 
 func (s *SuiteService) TearDownTest() {

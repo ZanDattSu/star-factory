@@ -34,7 +34,7 @@ func NewService(
 }
 
 func (s *service) RunConsumer(ctx context.Context) error {
-	logger.Info(ctx, "Starting ShipAssembled service")
+	logger.Info(ctx, "Starting order consumer for ship.assembled topic")
 
 	err := s.orderConsumer.Consume(ctx, s.orderHandler)
 	if err != nil {
@@ -42,5 +42,6 @@ func (s *service) RunConsumer(ctx context.Context) error {
 		return err
 	}
 
+	logger.Info(ctx, "Order consumer stopped")
 	return nil
 }

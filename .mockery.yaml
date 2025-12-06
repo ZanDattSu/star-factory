@@ -5,6 +5,8 @@ outpkg: "mocks"
 mockname: "{{.InterfaceName}}"
 resolve-type-alias: False
 issue-845-fix: True
+recursive: true
+disable-version-string: true
 
 packages:
   # Inventory service
@@ -26,7 +28,6 @@ packages:
   github.com/ZanDattSu/star-factory/order/internal/service:
     config:
       all: true
-      recursive: true
 
   # Order repository
   github.com/ZanDattSu/star-factory/order/internal/repository:

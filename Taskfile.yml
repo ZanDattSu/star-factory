@@ -65,61 +65,6 @@ tasks:
       - task down-inventory
       - task down-order
 
-  test-coverage:
-    desc: "Тесты с покрытием бизнес-логики (service/repository), отчёт по каждому модулю + общий"
-    cmds:
-      - |
-        echo "Запускаем расчёт покрытия..."
-        rm -rf {{.COVERAGE_DIR}}
-        mkdir -p {{.COVERAGE_DIR}}
-
-        ERR=0
-        for mod in {{.MODULES}}; do
-          echo "Обрабатываем модуль: $mod"
-
-          TARGET_PKGS=$(go list ./$mod/... \
-            | grep -E '/(internal/(service|repository))' \
-            | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)' \
-            | paste -sd "," -)
-
-          if [ -z "$TARGET_PKGS" ]; then
-            echo "⚠Нет подходящих пакетов в $mod"
-            continue
-          fi
-
-          go test -coverpkg="$TARGET_PKGS" \
-            -coverprofile={{.COVERAGE_DIR}}/$mod.out \
-            -covermode=atomic \
-            $(echo "$TARGET_PKGS" | tr "," " ") || ERR=1
-        done
-
-        if [ $ERR -ne 0 ]; then
-          echo "Ошибки во время тестов"
-          exit $ERR
-        fi
-
-        echo
-        echo "Покрытие по каждому модулю:"
-        for mod in {{.MODULES}}; do
-          OUTFILE="{{.COVERAGE_DIR}}/$mod.out"
-          if [ -f "$OUTFILE" ]; then
-            printf " • %s: " "$mod"
-            go tool cover -func="$OUTFILE" | tail -n1
-          fi
-        done
-
-        echo
-        echo "Склеиваем все покрытия..."
-        {
-          echo "mode: atomic"
-          find {{.COVERAGE_DIR}} -type f -name '*.out' ! -name '{{.COVERAGE_FILE}}' \
-            -exec grep -h -v "^mode:" {} +
-        } > {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
-
-        echo
-        echo "Общее покрытие по всем модулям:"
-        go tool cover -func={{.COVERAGE_DIR}}/{{.COVERAGE_FILE}} | tail -n1
-
   tree:
     desc: "Устанавливает tree и выводит структуру проекта без node_modules"
     cmds:
@@ -206,7 +151,7 @@ tasks:
       Зависимости:
         - install-golangci-lint: автоматически устанавливает линтер
         - format: форматирует код перед проверкой
-    deps: [ install-golangci-lint ]
+    deps: [ install-golangci-lint, format ]
     vars:
       MODULES: '{{.MODULES}}'
       GOLANGCI_LINT: '{{.GOLANGCI_LINT}}'
@@ -305,6 +250,15 @@ tasks:
     cmds:
       - task: redocly-cli:order-v1-bundle
 
+  yq:install:
+    desc: "Устанавливает yq в bin/ при необходимости"
+    cmds:
+      - |
+        [ -f {{.YQ}} ] || {
+          echo 'Installing yq...'
+          GOBIN={{.BIN_DIR}} go install github.com/mikefarah/yq/v4@{{.YQ_VERSION}}
+        }
+
   ogen:install:
     desc: "Скачивает ogen в папку bin"
     cmds:
@@ -352,15 +306,6 @@ tasks:
             (cd "$mod" && go mod tidy -compat=1.24) || exit 1
           fi
         done
-
-  yq:install:
-    desc: "Устанавливает yq в bin/ при необходимости"
-    cmds:
-      - |
-        [ -f {{.YQ}} ] || {
-          echo 'Installing yq...'
-          GOBIN={{.BIN_DIR}} go install github.com/mikefarah/yq/v4@{{.YQ_VERSION}}
-        }
 
   mockery:install:
     desc: "Устанавливает mockery в ./bin"
@@ -415,6 +360,61 @@ tasks:
         done
         exit $ERR
 
+  test-coverage:
+    desc: "Тесты с покрытием бизнес-логики (service/repository), отчёт по каждому модулю + общий"
+    cmds:
+      - |
+        echo "Запускаем расчёт покрытия..."
+        rm -rf {{.COVERAGE_DIR}}
+        mkdir -p {{.COVERAGE_DIR}}
+
+        ERR=0
+        for mod in {{.MODULES}}; do
+          echo "Обрабатываем модуль: $mod"
+
+          TARGET_PKGS=$(go list ./$mod/... \
+            | grep -E '/(internal/(service|repository))' \
+            | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)' \
+            | paste -sd "," -)
+
+          if [ -z "$TARGET_PKGS" ]; then
+            echo "⚠Нет подходящих пакетов в $mod"
+            continue
+          fi
+
+          go test -coverpkg="$TARGET_PKGS" \
+            -coverprofile={{.COVERAGE_DIR}}/$mod.out \
+            -covermode=atomic \
+            $(echo "$TARGET_PKGS" | tr "," " ") || ERR=1
+        done
+
+        if [ $ERR -ne 0 ]; then
+          echo "Ошибки во время тестов"
+          exit $ERR
+        fi
+
+        echo
+        echo "Покрытие по каждому модулю:"
+        for mod in {{.MODULES}}; do
+          OUTFILE="{{.COVERAGE_DIR}}/$mod.out"
+          if [ -f "$OUTFILE" ]; then
+            printf " • %s: " "$mod"
+            go tool cover -func="$OUTFILE" | tail -n1
+          fi
+        done
+
+        echo
+        echo "Склеиваем все покрытия..."
+        {
+          echo "mode: atomic"
+          find {{.COVERAGE_DIR}} -type f -name '*.out' ! -name '{{.COVERAGE_FILE}}' \
+            -exec grep -h -v "^mode:" {} +
+        } > {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
+
+        echo
+        echo "Общее покрытие по всем модулям:"
+        go tool cover -func={{.COVERAGE_DIR}}/{{.COVERAGE_FILE}} | tail -n1
+
   up-core:
     desc: Поднять core контейнеры
     dir: deploy/compose/core
@@ -427,7 +427,7 @@ tasks:
     dir: deploy/compose/core
     cmds:
       - echo "[task] Останавливаем core контейнеры"
-      - docker compose down --volumes
+      - docker compose down
 
   up-inventory:
     desc: Поднять Inventory сервис и все его зависимости
@@ -441,7 +441,7 @@ tasks:
     dir: deploy/compose/inventory
     cmds:
       - echo "[task] Останавливаем Inventory с зависимостями"
-      - docker compose down --volumes
+      - docker compose down
 
   up-order:
     desc: Поднять Order сервис и все его зависимости
@@ -455,7 +455,7 @@ tasks:
     dir: deploy/compose/order
     cmds:
       - echo "[task] Останавливаем Order с зависимостями"
-      - docker compose down --volumes
+      - docker compose down
 
   grpcurl:install:
     desc: "Устанавливает grpcurl в каталог bin"
@@ -478,7 +478,7 @@ tasks:
         }
         echo "envsubst установлен: {{.ENVSUBST}}"
 
-  env:generate:
+  env:gen:
     desc: "Генерирует .env файлы для всех сервисов из шаблонов и единого файла конфигурации"
     deps: [ env:install-envsubst ]
     cmds:
@@ -500,7 +500,7 @@ tasks:
 
         chmod +x "$SCRIPT"
         # Передаем список сервисов в виде строки с разделителями-запятыми
-        export DOCKER_SERVICES="{{.DOCKER_SERVICES}}"
+        export SERVICES="{{.DOCKER_SERVICES}}"
         ENV_SUBST={{.ENVSUBST}} "$SCRIPT"
 
   test-api:

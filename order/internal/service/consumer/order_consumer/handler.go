@@ -12,21 +12,37 @@ import (
 )
 
 func (s *service) orderHandler(ctx context.Context, msg consumer.Message) error {
+	logger.Info(ctx, "Processing message from ship.assembled topic",
+		zap.String("topic", msg.Topic),
+		zap.Int32("partition", msg.Partition),
+		zap.Int64("offset", msg.Offset),
+	)
+
 	event, err := s.orderDecoder.Decode(msg.Value)
 	if err != nil {
-		logger.Error(ctx, "Failed to decode ShipAssembled event")
+		logger.Error(ctx, "Failed to decode ShipAssembled event",
+			zap.String("topic", msg.Topic),
+			zap.Int32("partition", msg.Partition),
+			zap.Int64("offset", msg.Offset),
+			zap.Error(err),
+		)
 		return err
 	}
 
 	if event.OrderUuid == "" {
-		logger.Error(ctx, "Invalid event: empty order_uuid")
+		logger.Error(ctx, "Invalid event: empty order_uuid",
+			zap.String("topic", msg.Topic),
+			zap.Int32("partition", msg.Partition),
+			zap.Int64("offset", msg.Offset),
+			zap.String("event_uuid", event.EventUuid),
+		)
 		return errors.New("invalid event")
 	}
 
-	logger.Info(ctx, "Received OrderPaidEvent",
+	logger.Info(ctx, "Received ShipAssembled event",
 		zap.String("topic", msg.Topic),
-		zap.Any("partition", msg.Partition),
-		zap.Any("offset", msg.Offset),
+		zap.Int32("partition", msg.Partition),
+		zap.Int64("offset", msg.Offset),
 		zap.String("event_uuid", event.EventUuid),
 		zap.String("order_uuid", event.OrderUuid),
 		zap.String("user_uuid", event.UserUuid),
@@ -35,20 +51,34 @@ func (s *service) orderHandler(ctx context.Context, msg consumer.Message) error 
 
 	order, err := s.orderRepository.GetOrder(ctx, event.OrderUuid)
 	if err != nil {
-		logger.Error(ctx, "Failed to get order", zap.Error(err))
+		logger.Error(ctx, "Failed to get order",
+			zap.String("order_uuid", event.OrderUuid),
+			zap.String("event_uuid", event.EventUuid),
+			zap.Error(err),
+		)
 		return err
 	}
+
+	logger.Debug(ctx, "Order found, updating status to ASSEMBLED",
+		zap.String("order_uuid", event.OrderUuid),
+		zap.String("current_status", string(order.Status)),
+	)
 
 	order.Status = model.OrderStatusASSEMBLED
 
 	err = s.orderRepository.UpdateOrder(ctx, order.OrderUUID, order)
 	if err != nil {
-		logger.Error(ctx, "Failed to update order status to ASSEMBLED", zap.Error(err))
+		logger.Error(ctx, "Failed to update order status to ASSEMBLED",
+			zap.String("order_uuid", event.OrderUuid),
+			zap.String("event_uuid", event.EventUuid),
+			zap.Error(err),
+		)
 		return err
 	}
 
 	logger.Info(ctx, "Order status updated to ASSEMBLED",
 		zap.String("order_uuid", event.OrderUuid),
+		zap.String("event_uuid", event.EventUuid),
 	)
 
 	return nil

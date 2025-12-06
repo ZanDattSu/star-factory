@@ -202,7 +202,7 @@ func (s *SuiteService) TestPayOrderSuccess() {
   - Выполняется автоматическое извлечение версий из Taskfile.yml
   - Запуск линтера golangci-lint
   - Тестирование и подсчёт процента тестового покрытия
-  - Coverage badge обновляется в gist
+  - Процент покрытия обновляется в gist
 
 ---
 

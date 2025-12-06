@@ -22,8 +22,22 @@ func NewService(orderPaidProducer kafka.Producer) *service {
 }
 
 func (s *service) ProduceOrderPaid(ctx context.Context, event model.OrderPaidEvent) error {
+	logger.Info(ctx, "Producing OrderPaid event",
+		zap.String("event_uuid", event.EventUuid),
+		zap.String("order_uuid", event.OrderUuid),
+		zap.String("user_uuid", event.UserUuid),
+		zap.String("transaction_uuid", event.TransactionUuid),
+		zap.String("payment_method", string(event.PaymentMethod)),
+	)
+
 	id, err := event.PaymentMethod.ID()
 	if err != nil {
+		logger.Error(ctx, "Invalid payment method",
+			zap.String("event_uuid", event.EventUuid),
+			zap.String("order_uuid", event.OrderUuid),
+			zap.String("payment_method", string(event.PaymentMethod)),
+			zap.Error(err),
+		)
 		return fmt.Errorf("invalid payment method: %w", err)
 	}
 
@@ -36,15 +50,30 @@ func (s *service) ProduceOrderPaid(ctx context.Context, event model.OrderPaidEve
 
 	payload, err := proto.Marshal(msg)
 	if err != nil {
-		logger.Error(ctx, "failed to marshal UFORecorded", zap.Error(err))
+		logger.Error(ctx, "Failed to marshal OrderPaid event",
+			zap.String("event_uuid", event.EventUuid),
+			zap.String("order_uuid", event.OrderUuid),
+			zap.Error(err),
+		)
 		return err
 	}
 
 	err = s.orderPaidProducer.Send(ctx, []byte(event.OrderUuid), payload)
 	if err != nil {
-		logger.Error(ctx, "failed to publish UFORecorded", zap.Error(err))
+		logger.Error(ctx, "Failed to publish OrderPaid event",
+			zap.String("event_uuid", event.EventUuid),
+			zap.String("order_uuid", event.OrderUuid),
+			zap.String("transaction_uuid", event.TransactionUuid),
+			zap.Error(err),
+		)
 		return err
 	}
+
+	logger.Info(ctx, "OrderPaid event published successfully",
+		zap.String("event_uuid", event.EventUuid),
+		zap.String("order_uuid", event.OrderUuid),
+		zap.String("transaction_uuid", event.TransactionUuid),
+	)
 
 	return nil
 }

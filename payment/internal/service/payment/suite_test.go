@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 type ServiceSuite struct {
@@ -19,6 +21,7 @@ func (s *ServiceSuite) SetupTest() {
 	s.ctx = context.Background()
 
 	s.service = NewService()
+	logger.SetNopLogger()
 }
 
 func (s *ServiceSuite) TearDownTest() {

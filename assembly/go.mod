@@ -7,9 +7,9 @@ replace github.com/ZanDattSu/star-factory/shared => ../shared
 replace github.com/ZanDattSu/star-factory/platform => ../platform
 
 require (
+	github.com/IBM/sarama v1.46.3
 	github.com/ZanDattSu/star-factory/platform v0.0.0
 	github.com/ZanDattSu/star-factory/shared v0.0.0
-	github.com/IBM/sarama v1.46.3
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -22,6 +22,7 @@ require (
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect

@@ -2,6 +2,7 @@ package part
 
 import (
 	"context"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -25,6 +26,7 @@ func (s *SuiteService) SetupTest() {
 	s.partRepository = mocks.NewPartRepository(s.T())
 
 	s.service = NewService(s.partRepository)
+	logger.SetNopLogger()
 }
 
 func (s *SuiteService) TearDownTest() {

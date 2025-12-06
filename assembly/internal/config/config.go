@@ -13,8 +13,8 @@ var appConfig *config
 type config struct {
 	Logger        LoggerConfig
 	Kafka         KafkaConfig
-	OrderConsumer OrderConsumerConfig
-	OrderProducer OrderProducerConfig
+	OrderConsumer AssemblyConsumerConfig
+	OrderProducer AssemblyProducerConfig
 }
 
 func Load(path ...string) error {

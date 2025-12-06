@@ -19,16 +19,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4.2.2
 
-      - name: 🛠 Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v5.4.0
         with:
           go-version: ${{ inputs.go-version }}
 
       - name: Show go.work (debug)
-        run: cat go.work || echo "❗ go.work not found"
+        run: cat go.work || echo "go.work not found"
 
       - name: Install Task
         uses: arduino/setup-task@v2.0.0
