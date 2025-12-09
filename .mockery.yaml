@@ -9,6 +9,10 @@ recursive: true
 disable-version-string: true
 
 packages:
+  github.com/ZanDattSu/star-factory/notification/internal/service:
+    config:
+      all: true
+
   # Inventory service
   github.com/ZanDattSu/star-factory/inventory/internal/service:
     config:

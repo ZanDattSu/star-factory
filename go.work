@@ -7,4 +7,5 @@ use (
 	./platform
 	./shared
 	./assembly
+	notification
 )

@@ -2,12 +2,12 @@ package part
 
 import (
 	"context"
-	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
 	"github.com/ZanDattSu/star-factory/inventory/internal/repository/mocks"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 type SuiteService struct {

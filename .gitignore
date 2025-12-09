@@ -33,3 +33,4 @@ node_modules
 /deploy/compose/payment/.env
 /deploy/compose/core/.env
 /deploy/compose/assembly/.env
+/deploy/compose/notification/.env

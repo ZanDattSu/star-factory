@@ -2,7 +2,6 @@ package order
 
 import (
 	"context"
-	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -10,6 +9,7 @@ import (
 	clientMocks "github.com/ZanDattSu/star-factory/order/internal/client/grpc/mocks"
 	"github.com/ZanDattSu/star-factory/order/internal/repository/mocks"
 	serviceMocks "github.com/ZanDattSu/star-factory/order/internal/service/mocks"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 type SuiteService struct {

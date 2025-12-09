@@ -45,9 +45,8 @@ vars:
   COVERAGE_DIR: '{{.ROOT_DIR}}/coverage'
   COVERAGE_FILE: total.out
 
-  MODULES: inventory order payment platform assembly
-  SERVICES: "order inventory payment assembly"
-  DOCKER_SERVICES: core,inventory,order,payment,assembly
+  MODULES: inventory order payment platform assembly notification
+  SERVICES: core,inventory,order,payment,assembly,notification
 
 
 tasks:
@@ -500,7 +499,7 @@ tasks:
 
         chmod +x "$SCRIPT"
         # Передаем список сервисов в виде строки с разделителями-запятыми
-        export SERVICES="{{.DOCKER_SERVICES}}"
+        export SERVICES="{{.SERVICES}}"
         ENV_SUBST={{.ENVSUBST}} "$SCRIPT"
 
   test-api:

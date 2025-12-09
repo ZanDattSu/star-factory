@@ -37,7 +37,7 @@ type diContainer struct {
 	syncProducer          sarama.SyncProducer
 }
 
-func NewDiContainer() *diContainer {
+func NewDIContainer() *diContainer {
 	return &diContainer{}
 }
 

@@ -13,30 +13,30 @@ import (
 )
 
 type service struct {
-	orderConsumer   kafka.Consumer
-	orderDecoder    kafkaConverter.AssemblyDecoder
-	orderService    serv.OrderService
-	orderRepository repository.OrderRepository
+	shipAssembledConsumer kafka.Consumer
+	shipAssembledDecoder  kafkaConverter.ShipAssembledDecoder
+	orderService          serv.OrderService
+	orderRepository       repository.OrderRepository
 }
 
 func NewService(
-	orderConsumer kafka.Consumer,
-	orderDecoder kafkaConverter.AssemblyDecoder,
+	shipAssembledConsumer kafka.Consumer,
+	shipAssembledDecoder kafkaConverter.ShipAssembledDecoder,
 	orderService serv.OrderService,
 	orderRepository repository.OrderRepository,
 ) *service {
 	return &service{
-		orderConsumer:   orderConsumer,
-		orderDecoder:    orderDecoder,
-		orderService:    orderService,
-		orderRepository: orderRepository,
+		shipAssembledConsumer: shipAssembledConsumer,
+		shipAssembledDecoder:  shipAssembledDecoder,
+		orderService:          orderService,
+		orderRepository:       orderRepository,
 	}
 }
 
 func (s *service) RunConsumer(ctx context.Context) error {
 	logger.Info(ctx, "Starting order consumer for ship.assembled topic")
 
-	err := s.orderConsumer.Consume(ctx, s.orderHandler)
+	err := s.shipAssembledConsumer.Consume(ctx, s.handleShipAssembled)
 	if err != nil {
 		logger.Error(ctx, "Failed to consume from ship.assembled topic", zap.Error(err))
 		return err

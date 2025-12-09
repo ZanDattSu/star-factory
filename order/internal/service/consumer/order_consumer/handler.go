@@ -11,16 +11,16 @@ import (
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
-func (s *service) orderHandler(ctx context.Context, msg consumer.Message) error {
+func (s *service) handleShipAssembled(ctx context.Context, msg consumer.Message) error {
 	logger.Info(ctx, "Processing message from ship.assembled topic",
 		zap.String("topic", msg.Topic),
 		zap.Int32("partition", msg.Partition),
 		zap.Int64("offset", msg.Offset),
 	)
 
-	event, err := s.orderDecoder.Decode(msg.Value)
+	event, err := s.shipAssembledDecoder.Decode(msg.Value)
 	if err != nil {
-		logger.Error(ctx, "Failed to decode ShipAssembled event",
+		logger.Error(ctx, "Failed to decode Ship Assembled event",
 			zap.String("topic", msg.Topic),
 			zap.Int32("partition", msg.Partition),
 			zap.Int64("offset", msg.Offset),

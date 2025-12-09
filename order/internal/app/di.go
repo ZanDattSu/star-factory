@@ -53,7 +53,7 @@ type diContainer struct {
 	postgreSQLPool *pgxpool.Pool
 
 	// Kafka Decoder
-	assemblyDecoder kafkaDecoder.AssemblyDecoder
+	assemblyDecoder kafkaDecoder.ShipAssembledDecoder
 
 	// Kafka Infrastructure
 	consumerGroup    sarama.ConsumerGroup
@@ -224,7 +224,7 @@ func (d *diContainer) ConsumerGroup() sarama.ConsumerGroup {
 	return d.consumerGroup
 }
 
-func (d *diContainer) AssemblyDecoder() kafkaDecoder.AssemblyDecoder {
+func (d *diContainer) AssemblyDecoder() kafkaDecoder.ShipAssembledDecoder {
 	if d.assemblyDecoder == nil {
 		d.assemblyDecoder = decoder.NewAssemblyDecoder()
 	}

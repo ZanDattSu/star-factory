@@ -67,7 +67,7 @@ func (a *App) initDeps(ctx context.Context) error {
 }
 
 func (a *App) initDI(_ context.Context) error {
-	a.diContainer = NewDiContainer()
+	a.diContainer = NewDIContainer()
 	return nil
 }
 
