@@ -13,6 +13,7 @@ type config struct {
 	Logger        LoggerConfig
 	InventoryGRPC InventoryGRPCConfig
 	InventoryHTTP InventoryHTTPConfig
+	Auth          AuthGRPCService
 	Mongo         MongoConfig
 }
 
@@ -47,6 +48,7 @@ func Load(path ...string) error {
 		Logger:        logger,
 		InventoryGRPC: inventory,
 		InventoryHTTP: inventory,
+		Auth:          inventory,
 		Mongo:         mongo,
 	}
 

@@ -12,6 +12,8 @@ type paymentGrpcEnvConfig struct {
 	GRPCPort            string        `env:"GRPC_PORT,required"`
 	HTTPPort            string        `env:"HTTP_GATEWAY_PORT,required"`
 	HttpShutdownTimeout time.Duration `env:"HTTP_SHUTDOWN_TIMEOUT,required"`
+	AuthGRPCHost        string        `env:"AUTH_GRPC_HOST,required"`
+	AuthGRPCPort        string        `env:"AUTH_GRPC_PORT,required"`
 }
 
 type paymentGrpcConfig struct {
@@ -26,22 +28,30 @@ func NewPaymentGrpcConfig() (*paymentGrpcConfig, error) {
 	return &paymentGrpcConfig{raw: raw}, nil
 }
 
-func (p *paymentGrpcConfig) GRPCAddress() string {
-	return net.JoinHostPort(p.raw.Host, p.raw.GRPCPort)
+func (cfg *paymentGrpcConfig) GRPCAddress() string {
+	return net.JoinHostPort(cfg.raw.Host, cfg.raw.GRPCPort)
 }
 
-func (p *paymentGrpcConfig) GRPCPort() string {
-	return p.raw.GRPCPort
+func (cfg *paymentGrpcConfig) GRPCPort() string {
+	return cfg.raw.GRPCPort
 }
 
-func (p *paymentGrpcConfig) HTTPAddress() string {
-	return net.JoinHostPort(p.raw.Host, p.raw.HTTPPort)
+func (cfg *paymentGrpcConfig) HTTPAddress() string {
+	return net.JoinHostPort(cfg.raw.Host, cfg.raw.HTTPPort)
 }
 
-func (p *paymentGrpcConfig) HTTPPort() string {
-	return p.raw.HTTPPort
+func (cfg *paymentGrpcConfig) HTTPPort() string {
+	return cfg.raw.HTTPPort
 }
 
-func (p *paymentGrpcConfig) ShutdownTimeout() time.Duration {
-	return p.raw.HttpShutdownTimeout
+func (cfg *paymentGrpcConfig) ShutdownTimeout() time.Duration {
+	return cfg.raw.HttpShutdownTimeout
+}
+
+func (cfg *paymentGrpcConfig) AuthServicePort() string {
+	return cfg.raw.AuthGRPCPort
+}
+
+func (cfg *paymentGrpcConfig) AuthServiceAddress() string {
+	return net.JoinHostPort(cfg.raw.AuthGRPCHost, cfg.raw.AuthGRPCPort)
 }

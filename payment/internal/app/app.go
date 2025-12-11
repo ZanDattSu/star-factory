@@ -11,8 +11,8 @@ import (
 	"github.com/ZanDattSu/star-factory/payment/internal/config"
 	"github.com/ZanDattSu/star-factory/payment/internal/redirect"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/grpc/server"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
-	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/server"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
 
@@ -80,8 +80,11 @@ func (a *App) initCloser(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	srv, err := platformServer.NewGRPCServer(
 		config.AppConfig().PaymentGRPC.GRPCAddress(),
-		func(s *grpc.Server) {
-			paymentV1.RegisterPaymentServiceServer(s, a.diContainer.PaymentV1Api(ctx))
+		platformServer.Options{
+			Register: func(s *grpc.Server) {
+				paymentV1.RegisterPaymentServiceServer(s, a.diContainer.PaymentV1Api(ctx))
+			},
+			Auth: a.diContainer.AuthInterceptor(ctx),
 		},
 	)
 	if err != nil {

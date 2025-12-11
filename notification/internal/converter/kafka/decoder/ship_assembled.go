@@ -23,9 +23,9 @@ func (d *shipAssembledDecoder) Decode(data []byte) (model.ShipAssembledEvent, er
 	}
 
 	return model.ShipAssembledEvent{
-		EventUUID:    pb.EventUuid,
-		OrderUUID:    pb.OrderUuid,
-		UserUUID:     pb.UserUuid,
-		BuildTimeSec: time.Duration(pb.BuildTimeSec) * time.Second,
+		EventUUID: pb.EventUuid,
+		OrderUUID: pb.OrderUuid,
+		UserUUID:  pb.UserUuid,
+		BuildTime: time.Duration(pb.BuildTimeSec) * time.Second,
 	}, nil
 }

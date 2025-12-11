@@ -67,6 +67,8 @@ func OrderStatusToAPI(status model.OrderStatus) orderV1.OrderStatus {
 		return orderV1.OrderStatusPAID
 	case model.OrderStatusCANCELLED:
 		return orderV1.OrderStatusCANCELLED
+	case model.OrderStatusASSEMBLED:
+		return orderV1.OrderStatusASSEMBLED
 	default:
 		return orderV1.OrderStatusNOTSET
 	}
@@ -80,6 +82,8 @@ func OrderStatusFromAPI(status orderV1.OrderStatus) model.OrderStatus {
 		return model.OrderStatusPAID
 	case orderV1.OrderStatusCANCELLED:
 		return model.OrderStatusCANCELLED
+	case orderV1.OrderStatusASSEMBLED:
+		return model.OrderStatusASSEMBLED
 	default:
 		return model.OrderStatusUNSPECIFIED
 	}

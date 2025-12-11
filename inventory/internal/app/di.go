@@ -15,11 +15,18 @@ import (
 	"github.com/ZanDattSu/star-factory/inventory/internal/service"
 	inventoryService "github.com/ZanDattSu/star-factory/inventory/internal/service/part"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	grpcclient "github.com/ZanDattSu/star-factory/platform/pkg/grpc"
+	"github.com/ZanDattSu/star-factory/platform/pkg/grpc/interceptor"
+	authV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/auth/v1"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
 type diContainer struct {
 	inventoryV1Api inventoryV1.InventoryServiceServer
+
+	authClient      authV1.AuthServiceClient
+	authInterceptor *interceptor.AuthInterceptor
+
 	partService    service.PartService
 	partRepository repository.PartRepository
 
@@ -37,6 +44,35 @@ func (d *diContainer) InventoryV1Api(ctx context.Context) inventoryV1.InventoryS
 	}
 
 	return d.inventoryV1Api
+}
+
+func (d *diContainer) AuthClient(_ context.Context) authV1.AuthServiceClient {
+	if d.authClient == nil {
+		authConn, err := grpcclient.NewGRPCConnectWithoutSecure(config.AppConfig().Auth.AuthServiceAddress())
+		if err != nil {
+			panic(fmt.Sprintf(
+				"Failed to connect to Auth gRPC service (%s): %v",
+				config.AppConfig().Auth.AuthServicePort(),
+				err,
+			))
+		}
+
+		closer.AddNamed("Auth connection", func(ctx context.Context) error {
+			return authConn.Close()
+		})
+
+		d.authClient = authV1.NewAuthServiceClient(authConn)
+	}
+
+	return d.authClient
+}
+
+func (d *diContainer) AuthInterceptor(ctx context.Context) *interceptor.AuthInterceptor {
+	if d.authInterceptor == nil {
+		d.authInterceptor = interceptor.NewAuthInterceptor(d.AuthClient(ctx))
+	}
+
+	return d.authInterceptor
 }
 
 func (d *diContainer) PartService(ctx context.Context) service.PartService {

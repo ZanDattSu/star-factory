@@ -10,6 +10,7 @@ import (
 
 	"github.com/ZanDattSu/star-factory/order/internal/client/converter"
 	"github.com/ZanDattSu/star-factory/order/internal/model"
+	grpcAuth "github.com/ZanDattSu/star-factory/platform/pkg/grpc/interceptor"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
@@ -19,6 +20,8 @@ func (c *client) ListParts(ctx context.Context, partsFilter model.PartsFilter) (
 		zap.Int("parts_count", len(partsFilter.Uuids)),
 		zap.Strings("part_uuids", partsFilter.Uuids),
 	)
+
+	ctx = grpcAuth.ForwardSessionUUIDToGRPC(ctx)
 
 	parts, err := c.genClient.ListParts(
 		ctx,

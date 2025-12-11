@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/IBM/sarama v1.46.3
+	github.com/gomodule/redigo v1.9.3
 	github.com/pressly/goose/v3 v3.26.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.76.0

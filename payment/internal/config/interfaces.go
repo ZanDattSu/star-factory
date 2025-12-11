@@ -14,3 +14,8 @@ type PaymentGRPCConfig interface {
 	HTTPPort() string
 	ShutdownTimeout() time.Duration
 }
+
+type AuthGRPCService interface {
+	AuthServiceAddress() string
+	AuthServicePort() string
+}

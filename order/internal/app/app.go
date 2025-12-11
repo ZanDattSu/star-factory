@@ -115,7 +115,9 @@ func (a *App) migratorUp(ctx context.Context) error {
 func (a *App) initServer(ctx context.Context) error {
 	httpServer, err := server.NewHTTPServer(
 		config.AppConfig().OrderHTTP.OrderAddress(),
-		a.diContainer.OrderApi(ctx))
+		a.diContainer.OrderApi(ctx),
+		a.diContainer.AuthClient(ctx),
+	)
 	if err != nil {
 		logger.Error(ctx, "Failed to create HTTP server", zap.Error(err))
 		return err

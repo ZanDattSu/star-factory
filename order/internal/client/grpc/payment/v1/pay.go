@@ -10,6 +10,7 @@ import (
 
 	"github.com/ZanDattSu/star-factory/order/internal/client/converter"
 	"github.com/ZanDattSu/star-factory/order/internal/model"
+	grpcAuth "github.com/ZanDattSu/star-factory/platform/pkg/grpc/interceptor"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
@@ -20,6 +21,8 @@ func (c *client) PayOrder(ctx context.Context, orderUuid, userUuid string, payme
 		zap.String("user_uuid", userUuid),
 		zap.String("payment_method", string(paymentMethod)),
 	)
+
+	ctx = grpcAuth.ForwardSessionUUIDToGRPC(ctx)
 
 	transactionUUID, err := c.genClient.PayOrder(ctx, &paymentV1.PayOrderRequest{
 		OrderUuid:     orderUuid,

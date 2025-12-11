@@ -11,6 +11,7 @@ var appConfig *config
 type config struct {
 	Logger      LoggerConfig
 	PaymentGRPC PaymentGRPCConfig
+	Auth        AuthGRPCService
 }
 
 func Load(path ...string) error {
@@ -32,6 +33,7 @@ func Load(path ...string) error {
 	appConfig = &config{
 		Logger:      logger,
 		PaymentGRPC: paymentGrpc,
+		Auth:        paymentGrpc,
 	}
 
 	return nil

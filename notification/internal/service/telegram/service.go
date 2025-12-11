@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"strings"
+	"text/template"
+	"time"
+
+	"go.uber.org/zap"
+
 	"github.com/ZanDattSu/star-factory/notification/internal/client/http"
 	"github.com/ZanDattSu/star-factory/notification/internal/model"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
-	"go.uber.org/zap"
-	"text/template"
-	"time"
 )
 
 const chatID = 725700609
@@ -86,7 +89,7 @@ func (s *service) buildPaidMessage(paidEvent model.OrderPaidEvent) (string, erro
 		EventUUID:       paidEvent.EventUUID,
 		OrderUUID:       paidEvent.OrderUUID,
 		UserUUID:        paidEvent.UserUUID,
-		PaymentMethod:   string(paidEvent.PaymentMethod),
+		PaymentMethod:   escapeMarkdown(string(paidEvent.PaymentMethod)),
 		TransactionUUID: paidEvent.TransactionUUID,
 		RegisteredAt:    time.Now(),
 	}
@@ -105,7 +108,7 @@ func (s *service) buildAssembledMessage(shipAssembledEvent model.ShipAssembledEv
 		EventUUID:    shipAssembledEvent.EventUUID,
 		OrderUUID:    shipAssembledEvent.OrderUUID,
 		UserUUID:     shipAssembledEvent.UserUUID,
-		BuildTimeSec: int64(shipAssembledEvent.BuildTimeSec.Seconds()),
+		BuildTimeSec: int64(shipAssembledEvent.BuildTime.Seconds()),
 		RegisteredAt: time.Now(),
 	}
 
@@ -116,4 +119,15 @@ func (s *service) buildAssembledMessage(shipAssembledEvent model.ShipAssembledEv
 	}
 
 	return buf.String(), nil
+}
+
+// escapeMarkdown экранирует специальные символы Markdown
+func escapeMarkdown(text string) string {
+	replacer := strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+		"`", "\\`",
+		"[", "\\[",
+	)
+	return replacer.Replace(text)
 }

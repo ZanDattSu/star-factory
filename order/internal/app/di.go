@@ -6,8 +6,6 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
 	orderApi "github.com/ZanDattSu/star-factory/order/internal/api/v1"
 	ordApi "github.com/ZanDattSu/star-factory/order/internal/api/v1/order"
@@ -24,11 +22,13 @@ import (
 	ordService "github.com/ZanDattSu/star-factory/order/internal/service/order"
 	"github.com/ZanDattSu/star-factory/order/internal/service/produser/order_producer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	grpcclient "github.com/ZanDattSu/star-factory/platform/pkg/grpc"
 	wrappedKafka "github.com/ZanDattSu/star-factory/platform/pkg/kafka"
 	wrappedKafkaConsumer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/consumer"
 	wrappedKafkaProducer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/producer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	kafkaMiddleware "github.com/ZanDattSu/star-factory/platform/pkg/middleware/kafka"
+	authV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/auth/v1"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 	paymentV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/payment/v1"
 )
@@ -46,6 +46,7 @@ type diContainer struct {
 	orderRepository orderRepo.OrderRepository
 
 	// gRPC Clients
+	authClient      authV1.AuthServiceClient
 	paymentClient   gRPCClient.PaymentClient
 	inventoryClient gRPCClient.InventoryClient
 
@@ -87,9 +88,30 @@ func (d *diContainer) OrderService(ctx context.Context) orderService.OrderServic
 	return d.orderService
 }
 
+func (d *diContainer) AuthClient(_ context.Context) authV1.AuthServiceClient {
+	if d.authClient == nil {
+		authConn, err := grpcclient.NewGRPCConnectWithoutSecure(config.AppConfig().Auth.AuthServiceAddress())
+		if err != nil {
+			panic(fmt.Sprintf(
+				"Failed to connect to Auth gRPC service (%s): %v",
+				config.AppConfig().Auth.AuthServicePort(),
+				err,
+			))
+		}
+
+		closer.AddNamed("Auth connection", func(ctx context.Context) error {
+			return authConn.Close()
+		})
+
+		d.authClient = authV1.NewAuthServiceClient(authConn)
+	}
+
+	return d.authClient
+}
+
 func (d *diContainer) PaymentClient(_ context.Context) gRPCClient.PaymentClient {
 	if d.paymentClient == nil {
-		paymentConn, err := newGRPCConnectWithoutSecure(config.AppConfig().Payment.PaymentAddress())
+		paymentConn, err := grpcclient.NewGRPCConnectWithoutSecure(config.AppConfig().Payment.PaymentAddress())
 		if err != nil {
 			panic(fmt.Sprintf(
 				"Failed to connect to payment gRPC service (%s): %v",
@@ -99,10 +121,7 @@ func (d *diContainer) PaymentClient(_ context.Context) gRPCClient.PaymentClient 
 		}
 
 		closer.AddNamed("Payment connection", func(ctx context.Context) error {
-			if closeErr := paymentConn.Close(); closeErr != nil {
-				return closeErr
-			}
-			return nil
+			return paymentConn.Close()
 		})
 
 		paymentClient := paymentV1.NewPaymentServiceClient(paymentConn)
@@ -115,7 +134,7 @@ func (d *diContainer) PaymentClient(_ context.Context) gRPCClient.PaymentClient 
 
 func (d *diContainer) InventoryClient(_ context.Context) gRPCClient.InventoryClient {
 	if d.inventoryClient == nil {
-		inventoryConn, err := newGRPCConnectWithoutSecure(config.AppConfig().Inventory.InventoryAddress())
+		inventoryConn, err := grpcclient.NewGRPCConnectWithoutSecure(config.AppConfig().Inventory.InventoryAddress())
 		if err != nil {
 			panic(fmt.Sprintf(
 				"Failed to connect to inventory gRPC service (%s): %v",
@@ -124,10 +143,7 @@ func (d *diContainer) InventoryClient(_ context.Context) gRPCClient.InventoryCli
 			))
 		}
 		closer.AddNamed("Inventory connection", func(ctx context.Context) error {
-			if closeErr := inventoryConn.Close(); closeErr != nil {
-				return closeErr
-			}
-			return nil
+			return inventoryConn.Close()
 		})
 
 		inventoryClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
@@ -169,14 +185,6 @@ func (d *diContainer) PostgreSQLPool(ctx context.Context) *pgxpool.Pool {
 	}
 
 	return d.postgreSQLPool
-}
-
-func newGRPCConnectWithoutSecure(port string) (*grpc.ClientConn, error) {
-	conn, err := grpc.NewClient(
-		port,
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // отключаем TLS
-	)
-	return conn, err
 }
 
 func (d *diContainer) AssemblyConsumerService(ctx context.Context) orderService.ConsumerService {

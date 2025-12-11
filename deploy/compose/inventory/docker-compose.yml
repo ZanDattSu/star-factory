@@ -1,6 +1,6 @@
 services:
 
-  mongo-inventory: # Контейнер с MongoDB — используется для хранения данных об инвентаре (например, запчасти, компоненты)
+  mongo-inventory:
     image: ${MONGO_IMAGE_NAME}
 
     container_name: mongo-inventory
@@ -27,8 +27,6 @@ services:
       retries: 5
 
     restart: unless-stopped
-    # Автоматически перезапускаем контейнер, если он аварийно завершился
-    # Но если мы остановим его вручную — он не запустится повторно
 
     networks:
       - microservices-net

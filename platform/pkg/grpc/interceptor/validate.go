@@ -13,8 +13,7 @@ type Validatable interface {
 	Validate() error
 }
 
-// ValidationInterceptor LoggerInterceptor создает серверный унарный интерцептор, который
-// валидирует входящие запросы
+// ValidationInterceptor создает серверный унарный интерцептор, который валидирует входящие запросы
 func ValidationInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,

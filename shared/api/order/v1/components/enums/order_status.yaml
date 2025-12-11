@@ -5,9 +5,11 @@ enum:
   - PENDING_PAYMENT
   - PAID
   - CANCELLED
+  - ASSEMBLED
 x-enum-values:
   UNKNOWN: 0
   PENDING_PAYMENT: 1
   PAID: 2
   CANCELLED: 3
+  ASSEMBLED: 4
 example: PAID

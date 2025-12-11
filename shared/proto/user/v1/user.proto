@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "validate/validate.proto";
+import "common/v1/session.proto";
+
+package user.v1;
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/user/v1;user_v1";
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+// RegisterRequest содержит информацию для регистрации нового пользователя
+message RegisterRequest {
+  common.v1.UserInfo info = 1 [(validate.rules).message.required = true];   // Основная информация пользователя
+  string password = 2 [(validate.rules).string.min_len = 6];                // Пароль
+}
+
+// RegisterResponse содержит идентификатор созданного пользователя
+message RegisterResponse {
+  string user_uuid = 1 [(validate.rules).string.uuid = true];               // UUID созданного пользователя
+}
+
+// GetUserRequest содержит идентификатор пользователя для получения информации
+message GetUserRequest {
+  string user_uuid = 1 [(validate.rules).string.uuid = true];               // UUID пользователя
+}
+
+// GetUserResponse содержит полную информацию о пользователе
+message GetUserResponse {
+  common.v1.User user = 1 [(validate.rules).message.required = true];       // Пользователь
+}

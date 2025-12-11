@@ -13,7 +13,8 @@ type config struct {
 	Logger           LoggerConfig
 	OrderHTTP        OrderHTTPConfig
 	Payment          PaymentGRPCService
-	Inventory        InventoryGrpcService
+	Inventory        InventoryGRPCService
+	Auth             AuthGRPCService
 	Postgres         PostgresConfig
 	Kafka            KafkaConfig
 	AssemblyConsumer AssemblyConsumerConfig
@@ -36,7 +37,7 @@ func Load(path ...string) error {
 		return err
 	}
 
-	order, err := env.NewOrderHTTPConfig()
+	orderHTTP, err := env.NewOrderHTTPConfig()
 	if err != nil {
 		return err
 	}
@@ -64,9 +65,10 @@ func Load(path ...string) error {
 	appConfig = &config{
 		App:              app,
 		Logger:           logger,
-		OrderHTTP:        order,
-		Payment:          order,
-		Inventory:        order,
+		OrderHTTP:        orderHTTP,
+		Payment:          orderHTTP,
+		Inventory:        orderHTTP,
+		Auth:             orderHTTP,
 		Postgres:         postgres,
 		Kafka:            kafkaCfg,
 		OrderProducer:    producerCfg,

@@ -13,8 +13,8 @@ type OrderPaidEvent struct {
 
 // ShipAssembledEvent - событие "корабль собран"
 type ShipAssembledEvent struct {
-	EventUUID    string
-	OrderUUID    string
-	UserUUID     string
-	BuildTimeSec time.Duration
+	EventUUID string
+	OrderUUID string
+	UserUUID  string
+	BuildTime time.Duration
 }

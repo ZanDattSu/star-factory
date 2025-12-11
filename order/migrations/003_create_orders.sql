@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS orders
     part_uuids        UUID[]         NOT NULL DEFAULT '{}',
     total_price       NUMERIC(10, 2) NOT NULL CHECK (total_price >= 0),
     transaction_uuid  UUID,
-    payment_method_id INT            REFERENCES payment_methods (id),
-    status_id         INT            REFERENCES order_statuses (id),
+    payment_method_id INT REFERENCES payment_methods (id),
+    status_id         INT REFERENCES order_statuses (id),
     created_at        TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 

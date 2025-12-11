@@ -27,9 +27,14 @@ type PaymentGRPCService interface {
 	PaymentServicePort() string
 }
 
-type InventoryGrpcService interface {
+type InventoryGRPCService interface {
 	InventoryAddress() string
 	InventoryServicePort() string
+}
+
+type AuthGRPCService interface {
+	AuthServiceAddress() string
+	AuthServicePort() string
 }
 
 type PostgresConfig interface {

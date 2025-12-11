@@ -12,7 +12,7 @@ import (
 
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/grpc/health"
-	"github.com/ZanDattSu/star-factory/platform/pkg/interceptor"
+	"github.com/ZanDattSu/star-factory/platform/pkg/grpc/interceptor"
 )
 
 type GRPCServer struct {
@@ -22,18 +22,29 @@ type GRPCServer struct {
 
 type RegisterServerFunc func(server *grpc.Server)
 
-func NewGRPCServer(grpcAddress string, registerServerFunc RegisterServerFunc) (*GRPCServer, error) {
+type Options struct {
+	Register RegisterServerFunc
+	Auth     *interceptor.AuthInterceptor
+}
+
+func NewGRPCServer(grpcAddress string, opts Options) (*GRPCServer, error) {
 	listener, err := newListener(grpcAddress)
 	if err != nil {
 		return nil, fmt.Errorf("failed to listen: %w", err)
 	}
 
+	interceptors := []grpc.UnaryServerInterceptor{
+		interceptor.LoggerInterceptor(),
+		interceptor.ValidationInterceptor(),
+	}
+
+	if opts.Auth != nil {
+		interceptors = append(interceptors, opts.Auth.Unary())
+	}
+
 	server := grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.ChainUnaryInterceptor(
-			interceptor.LoggerInterceptor(),
-			interceptor.ValidationInterceptor(),
-		),
+		grpc.ChainUnaryInterceptor(interceptors...),
 	)
 
 	reflection.Register(server)
@@ -41,7 +52,9 @@ func NewGRPCServer(grpcAddress string, registerServerFunc RegisterServerFunc) (*
 	// Регистрируем health service для проверки работоспособности
 	health.RegisterService(server)
 
-	registerServerFunc(server)
+	if opts.Register != nil {
+		opts.Register(server)
+	}
 
 	return &GRPCServer{
 		server:   server,

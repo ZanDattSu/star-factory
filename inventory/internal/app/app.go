@@ -11,8 +11,8 @@ import (
 	"github.com/ZanDattSu/star-factory/inventory/internal/config"
 	"github.com/ZanDattSu/star-factory/inventory/internal/redirect"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/grpc/server"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
-	platformServer "github.com/ZanDattSu/star-factory/platform/pkg/server"
 	inventoryV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/inventory/v1"
 )
 
@@ -80,8 +80,11 @@ func (a *App) initCloser(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	server, err := platformServer.NewGRPCServer(
 		config.AppConfig().InventoryGRPC.GRPCAddress(),
-		func(s *grpc.Server) {
-			inventoryV1.RegisterInventoryServiceServer(s, a.diContainer.InventoryV1Api(ctx))
+		platformServer.Options{
+			Register: func(s *grpc.Server) {
+				inventoryV1.RegisterInventoryServiceServer(s, a.diContainer.InventoryV1Api(ctx))
+			},
+			Auth: a.diContainer.AuthInterceptor(ctx),
 		},
 	)
 	if err != nil {

@@ -14,6 +14,8 @@ type orderHTTPEnvConfig struct {
 	InventoryGRPCPort     string        `env:"INVENTORY_GRPC_PORT,required"`
 	PaymentGRPCHost       string        `env:"PAYMENT_GRPC_HOST,required"`
 	PaymentGRPCPort       string        `env:"PAYMENT_GRPC_PORT,required"`
+	AuthGRPCHost          string        `env:"AUTH_GRPC_HOST,required"`
+	AuthGRPCPort          string        `env:"AUTH_GRPC_PORT,required"`
 	HttpReadHeaderTimeout time.Duration `env:"HTTP_READ_TIMEOUT,required"`
 	HttpShutdownTimeout   time.Duration `env:"HTTP_SHUTDOWN_TIMEOUT,required"`
 }
@@ -52,6 +54,14 @@ func (cfg *orderHttpConfig) InventoryAddress() string {
 
 func (cfg *orderHttpConfig) InventoryServicePort() string {
 	return cfg.raw.InventoryGRPCPort
+}
+
+func (cfg *orderHttpConfig) AuthServicePort() string {
+	return cfg.raw.AuthGRPCPort
+}
+
+func (cfg *orderHttpConfig) AuthServiceAddress() string {
+	return net.JoinHostPort(cfg.raw.AuthGRPCHost, cfg.raw.AuthGRPCPort)
 }
 
 func (cfg *orderHttpConfig) ReadHeaderTimeout() time.Duration {

@@ -6,6 +6,8 @@ post:
   description:
     Создаёт новый заказ на основе выбранных пользователем деталей.
     Возвращает идентификатор заказа и итоговую стоимость.
+  parameters:
+    - $ref: "../headers/session_uuid.yaml"
   requestBody:
     required: true
     content:

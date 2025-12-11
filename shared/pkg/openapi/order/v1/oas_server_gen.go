@@ -21,7 +21,7 @@ type Handler interface {
 	// заказа и итоговую стоимость.
 	//
 	// POST /api/v1/orders
-	CreateOrder(ctx context.Context, req *CreateOrderRequest) (CreateOrderRes, error)
+	CreateOrder(ctx context.Context, req *CreateOrderRequest, params CreateOrderParams) (CreateOrderRes, error)
 	// GetOrder implements GetOrder operation.
 	//
 	// Возвращает информацию о заказе.

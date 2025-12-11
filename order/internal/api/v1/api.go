@@ -7,7 +7,7 @@ import (
 )
 
 type OrderApi interface {
-	CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (orderV1.CreateOrderRes, error)
+	CreateOrder(ctx context.Context, req *orderV1.CreateOrderRequest, params orderV1.CreateOrderParams) (orderV1.CreateOrderRes, error)
 	PayOrder(ctx context.Context, req *orderV1.PayOrderRequest, params orderV1.PayOrderParams) (orderV1.PayOrderRes, error)
 	GetOrder(ctx context.Context, params orderV1.GetOrderParams) (orderV1.GetOrderRes, error)
 	CancelOrder(ctx context.Context, params orderV1.CancelOrderParams) (orderV1.CancelOrderRes, error)

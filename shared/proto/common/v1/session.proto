@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+package common.v1;
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/common/v1;common_v1";
+
+// Session представляет сессию пользователя в системе
+message Session {
+  string uuid = 1 [(validate.rules).string.uuid = true];            // UUID сессии
+  google.protobuf.Timestamp created_at = 2;                         // Время создания
+  google.protobuf.Timestamp updated_at = 3;                         // Время последнего обновления
+  google.protobuf.Timestamp expires_at = 4;                         // Время истечения
+}
+
+// NotificationMethod описывает метод уведомления пользователя
+message NotificationMethod {
+  string provider_name = 1 [(validate.rules).string.min_len = 1];   // Провайдер: telegram, email, push и т.д.
+  string target = 2 [(validate.rules).string.min_len = 1];          // Адрес/идентификатор назначения (email, чат-id)
+}
+
+// UserInfo содержит основную информацию о пользователе
+message UserInfo {
+  string login = 1 [(validate.rules).string.min_len = 3];           // Логин
+  string email = 2 [(validate.rules).string.email = true];          // Email
+  repeated NotificationMethod notification_methods = 3;             // Каналы уведомлений
+}
+
+// User представляет полную информацию о пользователе
+message User {
+  string uuid = 1 [(validate.rules).string.uuid = true];            // UUID пользователя
+  UserInfo info = 2 [(validate.rules).message.required = true];     // Базовая информация
+  google.protobuf.Timestamp created_at = 3;                         // Дата создания
+  optional google.protobuf.Timestamp updated_at = 4;                // Дата обновления
+}

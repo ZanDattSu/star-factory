@@ -1,5 +1,6 @@
 parameters:
   - $ref: "../params/order_uuid.yaml"
+  - $ref: "../headers/session_uuid.yaml"
 
 post:
   summary: Оплатить заказ

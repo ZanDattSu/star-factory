@@ -1,6 +1,6 @@
 services:
 
-  postgres-order: # Контейнер с PostgreSQL, используемый для хранения данных заказов
+  postgres-order:
     image: ${POSTGRES_IMAGE_NAME}
 
     container_name: postgres-order
@@ -15,15 +15,13 @@ services:
       - "${EXTERNAL_POSTGRES_PORT}:5432"
 
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       # Настраиваем проверку готовности контейнера — pg_isready проверяет, принимает ли база подключения
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
     restart: unless-stopped
-    # Автоматически перезапускаем контейнер, если он аварийно завершился
-    # Если контейнер был остановлен вручную — не перезапускаем
 
     networks:
       - microservices-net

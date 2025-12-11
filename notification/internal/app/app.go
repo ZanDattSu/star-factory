@@ -3,12 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"github.com/ZanDattSu/star-factory/notification/internal/config"
-	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
-	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
+
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"go.uber.org/zap"
+
+	"github.com/ZanDattSu/star-factory/notification/internal/config"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
 type App struct {
@@ -127,7 +129,7 @@ func (a *App) initTelegramBot(ctx context.Context) error {
 	})
 
 	go func() {
-		logger.Info(ctx, "🤖 Telegram bot started...")
+		logger.Info(ctx, "Telegram bot started...")
 		telegramBot.Start(ctx)
 	}()
 

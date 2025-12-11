@@ -3,26 +3,27 @@ package app
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/http"
+	"time"
+
 	"github.com/IBM/sarama"
+	"github.com/go-telegram/bot"
+
 	httpClient "github.com/ZanDattSu/star-factory/notification/internal/client/http"
 	telegramClient "github.com/ZanDattSu/star-factory/notification/internal/client/http/telegram"
+	"github.com/ZanDattSu/star-factory/notification/internal/config"
 	kafkaConverter "github.com/ZanDattSu/star-factory/notification/internal/converter/kafka"
 	"github.com/ZanDattSu/star-factory/notification/internal/converter/kafka/decoder"
 	"github.com/ZanDattSu/star-factory/notification/internal/service"
 	orderPaidConsumer "github.com/ZanDattSu/star-factory/notification/internal/service/consumer/order_paid_consumer"
 	shipAssembledConsumer "github.com/ZanDattSu/star-factory/notification/internal/service/consumer/ship_assembled_consumer"
 	"github.com/ZanDattSu/star-factory/notification/internal/service/telegram"
+	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	wrappedKafka "github.com/ZanDattSu/star-factory/platform/pkg/kafka"
 	wrappedKafkaConsumer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/consumer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	kafkaMiddleware "github.com/ZanDattSu/star-factory/platform/pkg/middleware/kafka"
-	"github.com/go-telegram/bot"
-	"net"
-	"net/http"
-	"time"
-
-	"github.com/ZanDattSu/star-factory/notification/internal/config"
-	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
-	wrappedKafka "github.com/ZanDattSu/star-factory/platform/pkg/kafka"
 )
 
 type diContainer struct {
@@ -129,7 +130,6 @@ func (d *diContainer) TelegramBot() *bot.Bot {
 			config.AppConfig().TelegramBot.Token(),
 			bot.WithHTTPClient(client.Timeout, client),
 		)
-
 		if err != nil {
 			panic(fmt.Sprintf("failed to create telegram bot: %s\n", err.Error()))
 		}

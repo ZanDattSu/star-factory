@@ -45,7 +45,7 @@ func (s *service) handleShipAssembled(ctx context.Context, msg consumer.Message)
 		zap.String("event_uuid", event.EventUUID),
 		zap.String("order_uuid", event.OrderUUID),
 		zap.String("user_uuid", event.UserUUID),
-		zap.Int("build_time_sec", int(event.BuildTimeSec.Seconds())),
+		zap.Int("build_time_sec", int(event.BuildTime.Seconds())),
 	)
 
 	err = s.notificationService.SendAssembledNotification(ctx, event)

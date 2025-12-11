@@ -21,6 +21,11 @@ type InventoryHTTPConfig interface {
 	HTTPPort() string
 }
 
+type AuthGRPCService interface {
+	AuthServiceAddress() string
+	AuthServicePort() string
+}
+
 type MongoConfig interface {
 	URI() string
 	DatabaseName() string

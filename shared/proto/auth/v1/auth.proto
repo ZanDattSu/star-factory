@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "validate/validate.proto";
+import "common/v1/session.proto";
+
+package auth.v1;
+
+option go_package = "github.com/ZanDattSu/star-factory/shared/pkg/proto/auth/v1;auth_v1";
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Whoami(WhoamiRequest) returns (WhoamiResponse);
+}
+
+// LoginRequest содержит учетные данные пользователя для входа в систему
+message LoginRequest {
+  string login = 1 [(validate.rules).string.min_len = 3];           // Логин пользователя
+  string password = 2 [(validate.rules).string.min_len = 6];        // Пароль пользователя
+}
+
+// LoginResponse содержит информацию о созданной сессии после успешного входа
+message LoginResponse {
+  string session_uuid = 1 [(validate.rules).string.uuid = true];    // UUID активной сессии
+}
+
+// WhoamiRequest содержит идентификатор сессии для получения информации о пользователе
+message WhoamiRequest {
+  string session_uuid = 1 [(validate.rules).string.uuid = true];    // UUID активной сессии
+}
+
+// WhoamiResponse содержит информацию о сессии и пользователе
+message WhoamiResponse {
+  common.v1.Session session = 1 [(validate.rules).message.required = true]; // Информация о текущей сессии
+  common.v1.User user = 2 [(validate.rules).message.required = true];       // Владелец текущей сессии
+}

@@ -9,7 +9,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	httpmiddleware "github.com/ZanDattSu/star-factory/platform/pkg/middleware/http"
 	orderV1 "github.com/ZanDattSu/star-factory/shared/pkg/openapi/order/v1"
+	authV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/auth/v1"
 )
 
 const (
@@ -21,25 +23,24 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-func NewHTTPServer(address string, api orderV1.Handler) (*HTTPServer, error) {
-	// Создаем OpenAPI сервер
+func NewHTTPServer(address string, api orderV1.Handler, authClient authV1.AuthServiceClient) (*HTTPServer, error) {
 	openAPIHandler, err := orderV1.NewServer(api)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create OpenAPI server: %w", err)
 	}
 
-	// Настраиваем роутер
 	r := chi.NewRouter()
 
-	// Добавляем middleware
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(responseTimeout))
 
-	// Монтируем обработчики OpenAPI
-	r.Mount("/", openAPIHandler)
+	r.Group(func(r chi.Router) {
+		auth := httpmiddleware.NewAuthMiddleware(authClient)
+		r.Use(auth.Handle)
+		r.Mount("/", openAPIHandler)
+	})
 
-	// Создаем HTTP сервер
 	server := &http.Server{
 		Addr:              address,
 		Handler:           r,

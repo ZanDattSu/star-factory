@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/ZanDattSu/star-factory/notification/internal/app"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"go.uber.org/zap"
 
+	"github.com/ZanDattSu/star-factory/notification/internal/app"
 	"github.com/ZanDattSu/star-factory/notification/internal/config"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
