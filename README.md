@@ -1,5 +1,3 @@
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ZanDattSu/f617c6f48434b663c898480190e13075/raw/coverage.json)
-
 Стек: Golang, PosgreSQL, Kafka, Docker, Redis, MongoDB, Taskfile, REST API, gRPC, Git, Linux.
 
 ---
@@ -33,9 +31,7 @@ task test-coverage
 ---
 
 ## Архитектура проекта
-![architecture.png](readme/architecture.png)
-
-Полную версию можно посмотреть по ссылке: https://excalidraw.com/#json=ZFRc_9KZJyyPMIi4lOCbb,1ucK2qdt1BvLS9mC1LiK-g
+![architecture.png](readme/star-factory-arch.png)
 
 В проекте используется монорепозиторий с Go Workspaces. Каждый сервис — в своём модуле с `go.mod`, подключённом в `go.work`.
 
