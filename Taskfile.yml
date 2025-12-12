@@ -52,7 +52,7 @@ vars:
 tasks:
   run:
     desc: "Запустить проект"
-    deps: [ up-all ]
+    deps: [ up ]
     cmds:
       - |
         echo "Запуск всех сервисов..."
@@ -60,10 +60,12 @@ tasks:
           echo ""
           echo "Поднимаем сервис: $srv ..."
         
-          # Запускаем сервис в фоне
           (
+            # 1. Сборка
             cd "$srv/cmd" && go build -o ../../.tmp/bin/"$srv" .
-            ../../.tmp/bin/"$srv" &
+  
+            # 2. Запуск
+            cd "../.." && .tmp/bin/"$srv" &
           )
         
           # Немного ждём, чтобы лог был понятнее
@@ -74,6 +76,34 @@ tasks:
         
         echo ""
         echo "Все сервисы успешно подняты!"
+
+  stop:
+    desc: "Остановить все сервисы"
+    cmds:
+      - |
+        echo "Останавливаем сервисы..."
+
+        if [ ! -d ".tmp/pids" ]; then
+          echo "Нет запущенных сервисов"
+          exit 0
+        fi
+
+        for srv in {{.SERVICES}}; do
+          pid_file=".tmp/pids/$srv.pid"
+
+          if [ -f "$pid_file" ]; then
+            pid=$(cat "$pid_file")
+
+            echo "Останавливаем $srv (PID $pid)..."
+            kill "$pid" 2>/dev/null || true
+
+            rm -f "$pid_file"
+          else
+            echo "PID для $srv не найден"
+          fi
+        done
+
+        echo "Все сервисы остановлены"
 
   tree:
     desc: "Устанавливает tree и выводит структуру проекта без node_modules"

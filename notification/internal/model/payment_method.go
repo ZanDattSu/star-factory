@@ -5,17 +5,15 @@ import "fmt"
 type PaymentMethod string
 
 const (
-	PaymentMethodEmpty                       = ""
-	PaymentMethodUnspecified   PaymentMethod = "UNSPECIFIED"
-	PaymentMethodCard          PaymentMethod = "CARD"
-	PaymentMethodSbp           PaymentMethod = "SBP"
-	PaymentMethodCreditCard    PaymentMethod = "CREDIT_CARD"
-	PaymentMethodInvestorMoney PaymentMethod = "INVESTOR_MONEY"
+	PaymentMethodUnspecified   PaymentMethod = "Неизвестный метод"
+	PaymentMethodCard          PaymentMethod = "Банковская карта"
+	PaymentMethodSbp           PaymentMethod = "Система быстрых платежей"
+	PaymentMethodCreditCard    PaymentMethod = "Кредитная карта" //nolint:gosec
+	PaymentMethodInvestorMoney PaymentMethod = "Деньги инвестора"
 )
 
 // Маппинг код <-> ID
 var paymentMethodToID = map[PaymentMethod]int{
-	PaymentMethodEmpty:         1,
 	PaymentMethodUnspecified:   1,
 	PaymentMethodCard:          2,
 	PaymentMethodSbp:           3,

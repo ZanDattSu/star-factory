@@ -49,7 +49,6 @@ func main() {
 func gracefulShutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().App.ShutdownTimeout())
 	defer cancel()
-
 	if err := closer.CloseAll(ctx); err != nil {
 		logger.Error(ctx, "Ошибка при завершении работы", zap.Error(err))
 	}

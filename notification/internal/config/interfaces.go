@@ -1,6 +1,9 @@
 package config
 
-import "github.com/IBM/sarama"
+import (
+	"github.com/IBM/sarama"
+	"time"
+)
 
 type LoggerConfig interface {
 	Level() string
@@ -25,4 +28,6 @@ type ShipAssembledConsumerConfig interface {
 
 type TelegramBotConfig interface {
 	Token() string
+	MaxRetries() int
+	RetryDelay() time.Duration
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"strings"
 	"text/template"
 	"time"
 
@@ -89,7 +88,7 @@ func (s *service) buildPaidMessage(paidEvent model.OrderPaidEvent) (string, erro
 		EventUUID:       paidEvent.EventUUID,
 		OrderUUID:       paidEvent.OrderUUID,
 		UserUUID:        paidEvent.UserUUID,
-		PaymentMethod:   escapeMarkdown(string(paidEvent.PaymentMethod)),
+		PaymentMethod:   string(paidEvent.PaymentMethod),
 		TransactionUUID: paidEvent.TransactionUUID,
 		RegisteredAt:    time.Now(),
 	}
@@ -119,15 +118,4 @@ func (s *service) buildAssembledMessage(shipAssembledEvent model.ShipAssembledEv
 	}
 
 	return buf.String(), nil
-}
-
-// escapeMarkdown экранирует специальные символы Markdown
-func escapeMarkdown(text string) string {
-	replacer := strings.NewReplacer(
-		"_", "\\_",
-		"*", "\\*",
-		"`", "\\`",
-		"[", "\\[",
-	)
-	return replacer.Replace(text)
 }

@@ -18,8 +18,10 @@ import (
 
 type App struct {
 	diContainer *diContainer
-	gRPCServer  *platformServer.GRPCServer
-	httpServer  *redirect.HTTPServer
+
+	gRPCServer *platformServer.GRPCServer
+
+	httpServer *redirect.HTTPServer
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -44,17 +46,23 @@ func (a *App) RunHTTP(ctx context.Context) error {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(ctx context.Context) error{
 		a.initLogger,
+
 		a.initCloser,
+
 		a.initDI,
+
 		a.initGRPCServer,
+
 		a.initHTTPServer,
 	}
 
 	for _, f := range inits {
+
 		err := f(ctx)
 		if err != nil {
 			return err
 		}
+
 	}
 
 	return nil
@@ -62,28 +70,35 @@ func (a *App) initDeps(ctx context.Context) error {
 
 func (a *App) initDI(_ context.Context) error {
 	a.diContainer = NewDIContainer()
+
 	return nil
 }
 
 func (a *App) initLogger(_ context.Context) error {
 	return logger.Init(
+
 		config.AppConfig().Logger.Level(),
+
 		config.AppConfig().Logger.AsJson(),
 	)
 }
 
 func (a *App) initCloser(_ context.Context) error {
 	closer.SetLogger(logger.Logger())
+
 	return nil
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
 	srv, err := platformServer.NewGRPCServer(
+
 		config.AppConfig().PaymentGRPC.GRPCAddress(),
+
 		platformServer.Options{
 			Register: func(s *grpc.Server) {
 				paymentV1.RegisterPaymentServiceServer(s, a.diContainer.PaymentV1Api(ctx))
 			},
+
 			Auth: a.diContainer.AuthInterceptor(ctx),
 		},
 	)
@@ -95,6 +110,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	closer.AddNamed("gRPC server", func(ctx context.Context) error {
 		a.gRPCServer.Shutdown()
+
 		return nil
 	})
 
@@ -114,7 +130,9 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 
 func (a *App) initHTTPServer(ctx context.Context) error {
 	srv, err := redirect.NewHTTPServer(ctx,
+
 		config.AppConfig().PaymentGRPC.GRPCAddress(),
+
 		config.AppConfig().PaymentGRPC.HTTPAddress())
 	if err != nil {
 		return err
@@ -131,8 +149,11 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 
 func (a *App) runHTTPServer(ctx context.Context) error {
 	logger.Info(ctx, fmt.Sprintf(
+
 		"HTTP server with gRPC-Gateway and Swagger UI listening on localhost:%s",
+
 		config.AppConfig().PaymentGRPC.HTTPPort()))
+
 	if err := a.httpServer.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

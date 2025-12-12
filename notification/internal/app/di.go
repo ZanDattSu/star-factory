@@ -99,45 +99,42 @@ func (d *diContainer) OrderPaidDecoder() kafkaConverter.OrderPaidDecoder {
 
 func (d *diContainer) TelegramClient() httpClient.TelegramClient {
 	if d.telegramClient == nil {
-		d.telegramClient = telegramClient.NewClient(d.TelegramBot())
+		tgBot, _ := d.TelegramBot() //nolint:errcheck
+		d.telegramClient = telegramClient.NewClient(tgBot)
 	}
 
 	return d.telegramClient
 }
 
-func (d *diContainer) TelegramBot() *bot.Bot {
+func (d *diContainer) TelegramBot() (*bot.Bot, error) {
 	if d.telegramBot == nil {
-		// Явно указываем DNS resolver
 		dialer := &net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
 		}
 
 		transport := &http.Transport{
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				return dialer.DialContext(ctx, network, addr)
-			},
+			DialContext:           dialer.DialContext,
 			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
+			ResponseHeaderTimeout: 0,
 		}
 
 		client := &http.Client{
-			Timeout:   30 * time.Second,
 			Transport: transport,
 		}
 
 		b, err := bot.New(
 			config.AppConfig().TelegramBot.Token(),
-			bot.WithHTTPClient(client.Timeout, client),
+			bot.WithHTTPClient(0, client),
 		)
 		if err != nil {
-			panic(fmt.Sprintf("failed to create telegram bot: %s\n", err.Error()))
+			return nil, fmt.Errorf("failed to create telegram bot: %w", err)
 		}
 
 		d.telegramBot = b
 	}
 
-	return d.telegramBot
+	return d.telegramBot, nil
 }
 
 func (d *diContainer) ShipAssembledConsumerGroup() sarama.ConsumerGroup {

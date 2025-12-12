@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -39,6 +40,7 @@ func (a *App) Run(ctx context.Context) error {
 			errCh <- fmt.Errorf("consumer crashed: %w", err)
 		}
 	}()
+
 	go func() {
 		if err := a.runShipAssembledConsumer(ctx); err != nil {
 			errCh <- fmt.Errorf("consumer crashed: %w", err)
@@ -114,24 +116,66 @@ func (a *App) runShipAssembledConsumer(ctx context.Context) error {
 }
 
 func (a *App) initTelegramBot(ctx context.Context) error {
-	telegramBot := a.diContainer.TelegramBot()
+	var (
+		maxRetries  = config.AppConfig().TelegramBot.MaxRetries()
+		delay       = config.AppConfig().TelegramBot.RetryDelay()
+		telegramBot *bot.Bot
+		err         error
+	)
 
-	telegramBot.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, func(ctx context.Context, b *bot.Bot, update *models.Update) {
-		logger.Info(ctx, "chat id", zap.Int64("chat_id", update.Message.Chat.ID))
-
-		_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   "Notification Bot активирован! Теперь вы будете получать уведомления о новых заказах.",
-		})
-		if err != nil {
-			logger.Error(ctx, "Failed to send activation message", zap.Error(err))
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
-	})
+
+		logger.Info(ctx, "Initializing Telegram bot",
+			zap.Int("attempt", attempt),
+		)
+
+		telegramBot, err = a.diContainer.TelegramBot()
+		if err == nil {
+			break
+		}
+
+		logger.Warn(ctx, "Failed to init Telegram bot, retrying...",
+			zap.Int("attempt", attempt),
+			zap.Error(err),
+		)
+
+		time.Sleep(delay)
+	}
+
+	if err != nil {
+		return fmt.Errorf("telegram bot init failed after retries: %w", err)
+	}
+
+	a.registerTelegramHandlers(ctx, telegramBot)
 
 	go func() {
-		logger.Info(ctx, "Telegram bot started...")
+		logger.Info(ctx, "Telegram bot started")
 		telegramBot.Start(ctx)
 	}()
 
 	return nil
+}
+
+func (a *App) registerTelegramHandlers(ctx context.Context, telegramBot *bot.Bot) {
+	telegramBot.RegisterHandler(
+		bot.HandlerTypeMessageText,
+		"/start",
+		bot.MatchTypeExact,
+		func(ctx context.Context, b *bot.Bot, update *models.Update) {
+			logger.Info(ctx, "chat id", zap.Int64("chat_id", update.Message.Chat.ID))
+
+			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Notification Bot активирован! Теперь вы будете получать уведомления о новых заказах.",
+			})
+			if err != nil {
+				logger.Error(ctx, "Failed to send activation message", zap.Error(err))
+			}
+		},
+	)
 }

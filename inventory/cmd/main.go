@@ -24,30 +24,44 @@ func main() {
 	}
 
 	// SIGTERM - "вежливая" просьба завершиться
+
 	// SIGINT - прерывание с клавиатуры (Ctrl+C)
+
 	osSignals := []os.Signal{syscall.SIGINT, syscall.SIGTERM}
+
 	appCtx, appCancel := signal.NotifyContext(context.Background(), osSignals...)
+
 	defer appCancel()
+
 	defer gracefulShutdown()
 
 	closer.Configure(osSignals...)
 
 	a, err := app.New(appCtx)
 	if err != nil {
+
 		logger.Error(appCtx, "Не удалось создать приложение", zap.Error(err))
+
 		return
+
 	}
 
 	go func() {
 		if err = a.RunGRPC(appCtx); err != nil {
+
 			logger.Error(appCtx, "Ошибка при работе приложения", zap.Error(err))
+
 			return
+
 		}
 	}()
 
 	if err = a.RunHTTP(appCtx); err != nil {
+
 		logger.Error(appCtx, "Ошибка при работе приложения", zap.Error(err))
+
 		return
+
 	}
 }
 
@@ -55,7 +69,9 @@ func main() {
 
 func gracefulShutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().App.ShutdownTimeout())
+
 	defer cancel()
+
 	if err := closer.CloseAll(ctx); err != nil {
 		logger.Error(ctx, "Ошибка при завершении работы", zap.Error(err))
 	}

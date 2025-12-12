@@ -25,7 +25,22 @@ func (d *orderPaidDecoder) Decode(data []byte) (model.OrderPaidEvent, error) {
 		EventUUID:       pb.EventUuid,
 		OrderUUID:       pb.OrderUuid,
 		UserUUID:        pb.UserUuid,
-		PaymentMethod:   model.PaymentMethod(pb.PaymentMethod),
+		PaymentMethod:   mapPaymentMethodFromProto(pb.PaymentMethod),
 		TransactionUUID: pb.TransactionUuid,
 	}, nil
+}
+
+func mapPaymentMethodFromProto(pm eventsV1.PaymentMethod) model.PaymentMethod {
+	switch pm {
+	case eventsV1.PaymentMethod_PAYMENT_METHOD_CARD:
+		return model.PaymentMethodCard
+	case eventsV1.PaymentMethod_PAYMENT_METHOD_SBP:
+		return model.PaymentMethodSbp
+	case eventsV1.PaymentMethod_PAYMENT_METHOD_CREDIT_CARD:
+		return model.PaymentMethodCreditCard
+	case eventsV1.PaymentMethod_PAYMENT_METHOD_INVESTOR_MONEY:
+		return model.PaymentMethodInvestorMoney
+	default:
+		return model.PaymentMethodUnspecified
+	}
 }
