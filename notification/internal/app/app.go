@@ -144,14 +144,20 @@ func (a *App) initTelegramBot(ctx context.Context) error {
 			zap.Error(err),
 		)
 
-		time.Sleep(delay)
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
 	}
 
 	if err != nil {
 		return fmt.Errorf("telegram bot init failed after retries: %w", err)
 	}
 
-	a.registerTelegramHandlers(ctx, telegramBot)
+	a.registerTelegramHandlers(telegramBot)
 
 	go func() {
 		logger.Info(ctx, "Telegram bot started")
@@ -161,7 +167,7 @@ func (a *App) initTelegramBot(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) registerTelegramHandlers(ctx context.Context, telegramBot *bot.Bot) {
+func (a *App) registerTelegramHandlers(telegramBot *bot.Bot) {
 	telegramBot.RegisterHandler(
 		bot.HandlerTypeMessageText,
 		"/start",

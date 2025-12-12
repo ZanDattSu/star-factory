@@ -99,7 +99,7 @@ func (d *diContainer) OrderPaidDecoder() kafkaConverter.OrderPaidDecoder {
 
 func (d *diContainer) TelegramClient() httpClient.TelegramClient {
 	if d.telegramClient == nil {
-		tgBot, _ := d.TelegramBot() //nolint:errcheck
+		tgBot, _ := d.TelegramBot() //nolint:gosec
 		d.telegramClient = telegramClient.NewClient(tgBot)
 	}
 

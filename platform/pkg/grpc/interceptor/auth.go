@@ -14,37 +14,28 @@ import (
 )
 
 const (
-
 	// SessionUUIDMetadataKey ключ для передачи UUID сессии в gRPC metadata
-
 	SessionUUIDMetadataKey = "session-uuid"
 )
 
 type contextKey string
 
 const (
-
 	// userContextKey ключ для хранения пользователя в контексте
-
 	userContextKey contextKey = "user"
-
 	// sessionUUIDContextKey ключ для хранения session UUID в контексте
-
 	sessionUUIDContextKey contextKey = "session-uuid"
 )
 
 // AuthClient это алиас для сгенерированного gRPC клиента
-
 type AuthClient = authV1.AuthServiceClient
 
 // AuthInterceptor interceptor для аутентификации gRPC запросов
-
 type AuthInterceptor struct {
 	authClient AuthClient
 }
 
 // NewAuthInterceptor создает новый interceptor аутентификации
-
 func NewAuthInterceptor(authClient AuthClient) *AuthInterceptor {
 	return &AuthInterceptor{
 		authClient: authClient,
@@ -52,39 +43,30 @@ func NewAuthInterceptor(authClient AuthClient) *AuthInterceptor {
 }
 
 // Unary возвращает unary server interceptor для аутентификации
-
 func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
-
 		req any,
-
 		info *grpc.UnaryServerInfo,
-
 		handler grpc.UnaryHandler,
 	) (any, error) {
 		authCtx, err := i.authenticate(ctx)
 		if err != nil {
 			return nil, err
 		}
-
 		return handler(authCtx, req)
 	}
 }
 
 // authenticate выполняет аутентификацию и добавляет пользователя в контекст
-
 func (i *AuthInterceptor) authenticate(ctx context.Context) (context.Context, error) {
 	// Извлекаем metadata из контекста
-
 	md, ok := metadata.FromIncomingContext(ctx)
-
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "missing metadata")
 	}
 
 	// Получаем session UUID из metadata
-
 	sessionUUIDs := md.Get(SessionUUIDMetadataKey)
 
 	if len(sessionUUIDs) == 0 {
@@ -98,7 +80,6 @@ func (i *AuthInterceptor) authenticate(ctx context.Context) (context.Context, er
 	}
 
 	// Валидируем сессию через IAM сервис
-
 	whoamiRes, err := i.authClient.Whoami(ctx, &authV1.WhoamiRequest{
 		SessionUuid: sessionUUID,
 	})
@@ -107,16 +88,13 @@ func (i *AuthInterceptor) authenticate(ctx context.Context) (context.Context, er
 	}
 
 	// Добавляем пользователя и session UUID в контекст
-
 	authCtx := context.WithValue(ctx, userContextKey, whoamiRes.User)
-
 	authCtx = context.WithValue(authCtx, sessionUUIDContextKey, sessionUUID)
 
 	return authCtx, nil
 }
 
 // GetUserFromContext извлекает пользователя из контекста
-
 func GetUserFromContext(ctx context.Context) (*commonV1.User, bool) {
 	user, ok := ctx.Value(userContextKey).(*commonV1.User)
 
@@ -124,13 +102,11 @@ func GetUserFromContext(ctx context.Context) (*commonV1.User, bool) {
 }
 
 // GetUserContextKey возвращает ключ контекста для пользователя
-
 func GetUserContextKey() contextKey {
 	return userContextKey
 }
 
 // GetSessionUUIDFromContext извлекает session UUID из контекста
-
 func GetSessionUUIDFromContext(ctx context.Context) (string, bool) {
 	sessionUUID, ok := ctx.Value(sessionUUIDContextKey).(string)
 
@@ -138,25 +114,20 @@ func GetSessionUUIDFromContext(ctx context.Context) (string, bool) {
 }
 
 // AddSessionUUIDToContext добавляет session UUID в контекст
-
 func AddSessionUUIDToContext(ctx context.Context, sessionUUID string) context.Context {
 	return context.WithValue(ctx, sessionUUIDContextKey, sessionUUID)
 }
 
 // AddUserToContext добавляет пользователя user в контекст
-
 func AddUserToContext(ctx context.Context, user *commonV1.User) context.Context {
 	return context.WithValue(ctx, userContextKey, user)
 }
 
 // ForwardSessionUUIDToGRPC добавляет session UUID из контекста в исходящие gRPC metadata
-
 func ForwardSessionUUIDToGRPC(ctx context.Context) context.Context {
 	sessionUUID, ok := GetSessionUUIDFromContext(ctx)
-
 	if !ok || sessionUUID == "" {
 		return ctx
 	}
-
 	return metadata.AppendToOutgoingContext(ctx, SessionUUIDMetadataKey, sessionUUID)
 }

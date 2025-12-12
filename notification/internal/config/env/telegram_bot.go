@@ -1,8 +1,9 @@
 package env
 
 import (
-	"github.com/caarlos0/env/v11"
 	"time"
+
+	"github.com/caarlos0/env/v11"
 )
 
 type telegramBotEnvConfig struct {
