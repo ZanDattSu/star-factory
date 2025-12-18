@@ -12,5 +12,7 @@ VALUES ('UNSPECIFIED', 'Не указан'),
        ('PAID', 'Оплачен'),
        ('CANCELLED', 'Отменён');
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_order_statuses_code ON order_statuses (code);
+
 -- +goose Down
 DROP TABLE IF EXISTS order_statuses;

@@ -316,7 +316,7 @@ tasks:
           GOBIN={{.BIN_DIR}} go install github.com/ogen-go/ogen/cmd/ogen@{{.OGEN_VERSION}}
         }
 
-  ogen:gen:
+  api:gen:
     desc: "Генерация Go-кода из всех OpenAPI-деклараций с x-ogen"
     deps: [ ogen:install, yq:install ]
     cmds:
@@ -341,7 +341,7 @@ tasks:
     desc: "Генерация всех proto и OpenAPI деклараций"
     cmds:
       - task: proto:gen
-      - task: ogen:gen
+      - task: api:gen
   mockery:install:
     desc: "Устанавливает mockery в ./bin"
     cmds:
@@ -389,7 +389,7 @@ tasks:
           echo "Обрабатываем модуль: $mod"
 
           TARGET_PKGS=$(go list ./$mod/... \
-            | grep -E '/(internal/(service|repository))' \
+            | grep -E '/(internal/(service))' \
             | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)' \
             | paste -sd "," -)
 
@@ -510,6 +510,7 @@ tasks:
       - task down-core
       - task down-inventory
       - task down-order
+      - task down-auth
   grpcurl:install:
     desc: "Устанавливает grpcurl в каталог bin"
     cmds:

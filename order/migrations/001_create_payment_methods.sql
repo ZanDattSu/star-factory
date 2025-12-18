@@ -13,5 +13,7 @@ VALUES ('UNSPECIFIED', 'Не указано'),
        ('CREDIT_CARD', 'Кредитная карта'),
        ('INVESTOR_MONEY', 'Инвестиционные средства');
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_payment_methods_code ON payment_methods (code);
+
 -- +goose Down
 DROP TABLE IF EXISTS payment_methods;
