@@ -16,6 +16,7 @@ type config struct {
 	OrderPaidConsumer     OrderPaidConsumerConfig
 	ShipAssembledConsumer ShipAssembledConsumerConfig
 	TelegramBot           TelegramBotConfig
+	AuthService           AuthGRPCService
 }
 
 func Load(path ...string) error {
@@ -49,12 +50,18 @@ func Load(path ...string) error {
 		return err
 	}
 
+	authGrpcConfig, err := env.NewAuthGrpcConfig()
+	if err != nil {
+		return err
+	}
+
 	appConfig = &config{
 		Logger:                loggerCfg,
 		Kafka:                 kafkaCfg,
 		OrderPaidConsumer:     orderPaidConsumerCfg,
 		ShipAssembledConsumer: shipAssembledConsumerCfg,
 		TelegramBot:           telegramBotCfg,
+		AuthService:           authGrpcConfig,
 	}
 
 	return nil

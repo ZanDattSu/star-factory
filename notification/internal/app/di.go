@@ -10,6 +10,8 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/go-telegram/bot"
 
+	"github.com/ZanDattSu/star-factory/notification/internal/client/grpc/auth"
+	authclient "github.com/ZanDattSu/star-factory/notification/internal/client/grpc/auth/v1"
 	httpClient "github.com/ZanDattSu/star-factory/notification/internal/client/http"
 	telegramClient "github.com/ZanDattSu/star-factory/notification/internal/client/http/telegram"
 	"github.com/ZanDattSu/star-factory/notification/internal/config"
@@ -20,10 +22,12 @@ import (
 	shipAssembledConsumer "github.com/ZanDattSu/star-factory/notification/internal/service/consumer/ship_assembled_consumer"
 	"github.com/ZanDattSu/star-factory/notification/internal/service/telegram"
 	"github.com/ZanDattSu/star-factory/platform/pkg/closer"
+	grpcclient "github.com/ZanDattSu/star-factory/platform/pkg/grpc"
 	wrappedKafka "github.com/ZanDattSu/star-factory/platform/pkg/kafka"
 	wrappedKafkaConsumer "github.com/ZanDattSu/star-factory/platform/pkg/kafka/consumer"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 	kafkaMiddleware "github.com/ZanDattSu/star-factory/platform/pkg/middleware/kafka"
+	userV1 "github.com/ZanDattSu/star-factory/shared/pkg/proto/user/v1"
 )
 
 type diContainer struct {
@@ -37,6 +41,7 @@ type diContainer struct {
 	shipAssembledDecoder kafkaConverter.ShipAssembledDecoder
 
 	// telegram
+	authClient     auth.AuthClient
 	telegramClient httpClient.TelegramClient
 	telegramBot    *bot.Bot
 
@@ -55,7 +60,10 @@ func NewDIContainer() *diContainer {
 
 func (d *diContainer) NotificationService() service.NotificationService {
 	if d.notificationService == nil {
-		d.notificationService = telegram.NewService(d.TelegramClient())
+		d.notificationService = telegram.NewService(
+			d.TelegramClient(),
+			d.AuthClient(),
+		)
 	}
 	return d.notificationService
 }
@@ -104,6 +112,28 @@ func (d *diContainer) TelegramClient() httpClient.TelegramClient {
 	}
 
 	return d.telegramClient
+}
+
+func (d *diContainer) AuthClient() auth.AuthClient {
+	if d.authClient == nil {
+		authConn, err := grpcclient.NewGRPCConnectWithoutSecure(config.AppConfig().AuthService.AuthServiceAddress())
+		if err != nil {
+			panic(fmt.Sprintf(
+				"Failed to connect to auth gRPC service (%s): %v",
+				config.AppConfig().AuthService.AuthServicePort(),
+				err,
+			))
+		}
+
+		closer.AddNamed("Auth connection", func(ctx context.Context) error {
+			return authConn.Close()
+		})
+
+		authClient := userV1.NewUserServiceClient(authConn)
+		d.authClient = authclient.NewClient(authClient)
+	}
+
+	return d.authClient
 }
 
 func (d *diContainer) TelegramBot() (*bot.Bot, error) {

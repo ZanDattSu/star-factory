@@ -32,3 +32,8 @@ type TelegramBotConfig interface {
 	MaxRetries() int
 	RetryDelay() time.Duration
 }
+
+type AuthGRPCService interface {
+	AuthServiceAddress() string
+	AuthServicePort() string
+}

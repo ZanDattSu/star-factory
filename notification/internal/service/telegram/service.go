@@ -1,56 +1,27 @@
 package telegram
 
 import (
-	"bytes"
 	"context"
-	"embed"
-	"text/template"
-	"time"
+	"fmt"
+	"strconv"
 
 	"go.uber.org/zap"
 
+	"github.com/ZanDattSu/star-factory/notification/internal/client/grpc/auth"
 	"github.com/ZanDattSu/star-factory/notification/internal/client/http"
 	"github.com/ZanDattSu/star-factory/notification/internal/model"
 	"github.com/ZanDattSu/star-factory/platform/pkg/logger"
 )
 
-const chatID = 725700609
-
-//go:embed templates/order_paid_notification.tmpl
-var orderPaidTemplateFS embed.FS
-
-type orderPaid struct {
-	EventUUID       string
-	OrderUUID       string
-	UserUUID        string
-	PaymentMethod   string
-	TransactionUUID string
-	RegisteredAt    time.Time
-}
-
-var orderPaidTemplate = template.Must(template.ParseFS(orderPaidTemplateFS, "templates/order_paid_notification.tmpl"))
-
-//go:embed templates/ship_assembled_notification.tmpl
-var shipAssembledTemplateFS embed.FS
-
-type shipAssembled struct {
-	EventUUID    string
-	OrderUUID    string
-	UserUUID     string
-	BuildTimeSec int64
-	RegisteredAt time.Time
-}
-
-var shipAssembledTemplate = template.Must(template.ParseFS(shipAssembledTemplateFS, "templates/ship_assembled_notification.tmpl"))
+const defaultChatID int64 = 725700609
 
 type service struct {
 	telegramClient http.TelegramClient
+	authClient     auth.AuthClient
 }
 
-func NewService(telegramClient http.TelegramClient) *service {
-	return &service{
-		telegramClient: telegramClient,
-	}
+func NewService(telegramClient http.TelegramClient, authClient auth.AuthClient) *service {
+	return &service{telegramClient: telegramClient, authClient: authClient}
 }
 
 func (s *service) SendPaidNotification(ctx context.Context, paidEvent model.OrderPaidEvent) error {
@@ -59,12 +30,31 @@ func (s *service) SendPaidNotification(ctx context.Context, paidEvent model.Orde
 		return err
 	}
 
+	isSub, chatID, err := s.telegramSubscription(ctx, paidEvent.UserUUID)
+	if err != nil {
+		return err
+	}
+
+	if !isSub {
+		logger.Info(
+			ctx,
+			"user is not subscribed to telegram notifications",
+			zap.String("user_uuid", paidEvent.UserUUID),
+		)
+		return nil
+	}
+
 	err = s.telegramClient.SendMessage(ctx, chatID, message)
 	if err != nil {
 		return err
 	}
 
-	logger.Info(ctx, "Telegram message sent to chat", zap.Int("chat_id", chatID), zap.String("message", message))
+	logger.Info(
+		ctx,
+		"telegram message sent",
+		zap.Int64("chat_id", chatID),
+		zap.String("user_uuid", paidEvent.UserUUID),
+	)
 	return nil
 }
 
@@ -74,48 +64,63 @@ func (s *service) SendAssembledNotification(ctx context.Context, shipAssembledEv
 		return err
 	}
 
+	isSub, chatID, err := s.telegramSubscription(ctx, shipAssembledEvent.UserUUID)
+	if err != nil {
+		return err
+	}
+
+	if !isSub {
+		logger.Info(
+			ctx,
+			"user is not subscribed to telegram notifications",
+			zap.String("user_uuid", shipAssembledEvent.UserUUID),
+		)
+		return nil
+	}
+
 	err = s.telegramClient.SendMessage(ctx, chatID, message)
 	if err != nil {
 		return err
 	}
 
-	logger.Info(ctx, "Telegram message sent to chat", zap.Int("chat_id", chatID), zap.String("message", message))
+	logger.Info(ctx, "Telegram message sent to chat", zap.Int64("chat_id", chatID), zap.String("message", message))
 	return nil
 }
 
-func (s *service) buildPaidMessage(paidEvent model.OrderPaidEvent) (string, error) {
-	data := orderPaid{
-		EventUUID:       paidEvent.EventUUID,
-		OrderUUID:       paidEvent.OrderUUID,
-		UserUUID:        paidEvent.UserUUID,
-		PaymentMethod:   string(paidEvent.PaymentMethod),
-		TransactionUUID: paidEvent.TransactionUUID,
-		RegisteredAt:    time.Now(),
-	}
-
-	var buf bytes.Buffer
-	err := orderPaidTemplate.Execute(&buf, data)
+func (s *service) telegramSubscription(ctx context.Context, userUUID string) (bool, int64, error) {
+	user, err := s.authClient.GetUser(ctx, userUUID)
 	if err != nil {
-		return "", err
+		return false, 0, fmt.Errorf("get user: %w", err)
+	}
+	if user == nil {
+		return false, 0, fmt.Errorf("user %s not found", userUUID)
 	}
 
-	return buf.String(), nil
+	for _, nm := range user.Info.NotificationMethods {
+		if nm.ProviderName != "telegram" {
+			continue
+		}
+
+		chatID := defaultChatID
+
+		if nm.Target != "" {
+			parsedChatID, err := parseChatID(nm.Target)
+			if err != nil {
+				return false, 0, err
+			}
+			chatID = parsedChatID
+		}
+
+		return true, chatID, nil
+	}
+
+	return false, 0, nil
 }
 
-func (s *service) buildAssembledMessage(shipAssembledEvent model.ShipAssembledEvent) (string, error) {
-	data := shipAssembled{
-		EventUUID:    shipAssembledEvent.EventUUID,
-		OrderUUID:    shipAssembledEvent.OrderUUID,
-		UserUUID:     shipAssembledEvent.UserUUID,
-		BuildTimeSec: int64(shipAssembledEvent.BuildTime.Seconds()),
-		RegisteredAt: time.Now(),
-	}
-
-	var buf bytes.Buffer
-	err := shipAssembledTemplate.Execute(&buf, data)
+func parseChatID(target string) (int64, error) {
+	id, err := strconv.ParseInt(target, 10, 64)
 	if err != nil {
-		return "", err
+		return 0, fmt.Errorf("invalid telegram chat_id %q: %w", target, err)
 	}
-
-	return buf.String(), nil
+	return id, nil
 }
